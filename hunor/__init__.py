@@ -1,0 +1,1 @@
+from hunor import main
