@@ -10,3 +10,5 @@ env/
 .eggs/
 /.idea/
 *.iml
+
+/target/
