@@ -11,4 +11,5 @@ env/
 /.idea/
 *.iml
 
-/target/
+target/
+/output/
