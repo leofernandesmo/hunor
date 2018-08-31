@@ -70,29 +70,40 @@ def main():
 
     classpath = _compile_project(options, jdk)
     test_suites = _generate_test_suites(options, jdk, classpath)
-
     junit = JUnit(jdk, options.sut_class, classpath, source_dir)
 
-    major = Major(os.path.abspath(options.mutants))
+    equivalence_analysis(options, junit, test_suites)
 
+
+def equivalence_analysis(options, junit, test_suites):
+    major = Major(os.path.abspath(options.mutants))
     mutants = major.read_log()
 
-    print("RUNNING TEST SUITES FOR ALL MUTANTS...")
-    for i in mutants:
-        print("\tmutant: {0}#{1}...".format(mutants[i]['operator'], mutants[i]['id']))
-        mutants[i]['result'] = junit.run_test_suites(
-            test_suites,
-            os.path.join(os.path.abspath(options.mutants), str(mutants[i]['id'])),
-            mutants[i]['line_number']
-        )
+    with open(os.path.join(options.output, 'equivalents.csv'), 'w') as f:
+        f.write('id,equivalent,coverage\n')
+        print("RUNNING TEST SUITES FOR ALL MUTANTS...")
+        for i in mutants:
+            print("\tmutant: {0}#{1}...".format(mutants[i]['operator'], mutants[i]['id']))
+            mutants[i]['result'] = junit.run_test_suites(
+                test_suites,
+                os.path.join(os.path.abspath(options.mutants), str(mutants[i]['id'])),
+                mutants[i]['line_number']
+            )
 
-        coverage = mutants[i]['result'][0]['coverage'] + mutants[i]['result'][1]['coverage']
-        fail = mutants[i]['result'][0]['fail'] or mutants[i]['result'][1]['fail']
+            print(mutants[i]['result'])
+            coverage = mutants[i]['result'][0]['coverage'] + mutants[i]['result'][1]['coverage']
+            fail = mutants[i]['result'][0]['fail'] or mutants[i]['result'][1]['fail']
 
-        if coverage >= int(options.coverage_threshold) and not fail:
-            print('{0}#{1} is EQUIVALENT! [line coverage = {2}]'.format(
-                mutants[i]['operator'], mutants[i]['id'], coverage))
+            if coverage >= int(options.coverage_threshold) and not fail:
+                print('{0}#{1} is EQUIVALENT! [line coverage = {2}]'.format(
+                    mutants[i]['operator'], mutants[i]['id'], coverage))
+                f.write('{0},{1},{2}\n'.format(mutants[i]['id'], 'x', coverage))
+            else:
+                f.write('{0},{1},{2}\n'.format(mutants[i]['id'], '', coverage))
+        f.close()
 
 
 if __name__ == '__main__':
     main()
+
+

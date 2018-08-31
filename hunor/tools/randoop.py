@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 
+from hunor.utils import generate_classpath
 from hunor.utils import get_class_files
 
 RANDOOP = os.path.abspath(os.sep.join(['..', 'bin', 'randoop-all-4.0.3.jar']))
@@ -49,7 +50,7 @@ class Randoop:
     def _compile(self):
         os.mkdir(self.tests_classes)
 
-        classpath = self.classpath + ':' + self.tests_src + ':' + JUNIT + ':' + HAMCREST
+        classpath = generate_classpath([self.classpath, self.tests_src, JUNIT, HAMCREST])
 
         for java_test_file in sorted(get_class_files(self.tests_src, ext='.java')):
             self.jdk.run_javac(os.path.join(self.tests_src, java_test_file), 36000,
