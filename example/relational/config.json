@@ -5,7 +5,6 @@
         "--maxsize=100",
         "--testsperfile=2000",
         "--only-test-public-members=true",
-        "--testclass=br.ufal.ic.masg.operations.GreaterOrEqualThan",
         "--time-limit=10",
         "--progressintervalsteps=-1",
         "--progressintervalmillis=-1",
@@ -13,6 +12,11 @@
         "--progressdisplay=false",
         "--usethreads=true",
         "--call_timeout=1000"
+    ]
+  },
+  "evosuite": {
+    "parameters": [
+
     ]
   }
 }

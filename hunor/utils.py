@@ -13,3 +13,7 @@ def get_class_files(path, package='', ext='.class'):
             files.append(os.path.join(package, node))
 
     return files
+
+
+def generate_classpath(paths):
+    return os.pathsep.join(paths)

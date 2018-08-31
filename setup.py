@@ -18,9 +18,10 @@ setup(
     author='Marcio Augusto Guimarães',
     author_email='masg@ic.ufal.br',
     license='MIT',
-    packages=['hunor'],
+    packages=['hunor', 'hunor.tools'],
     install_requires=[
-        'argparse==1.4.0'
+        'argparse==1.4.0',
+        'beautifulsoup4==4.6.0'
     ],
     test_suite='nose.collector',
     tests_require=[
