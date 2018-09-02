@@ -6,10 +6,12 @@ from bs4 import BeautifulSoup
 from hunor.utils import generate_classpath
 
 
-JUNIT = os.path.abspath(os.sep.join(['..', 'bin', 'junit-4.12.jar']))
-HAMCREST = os.path.abspath(os.sep.join(['..', 'bin', 'hamcrest-core-1.3.jar']))
-EVOSUITE = os.path.abspath(os.sep.join(['..', 'bin', 'evosuite-standalone-runtime-1.0.6.jar']))
-JMOCKIT = os.path.abspath(os.sep.join(['..', 'bin', 'jmockit-1.40-marcio.1.jar']))
+PATH = os.path.dirname(os.path.abspath(__file__))
+
+JUNIT = os.sep.join([PATH, 'bin', 'junit-4.12.jar'])
+HAMCREST = os.sep.join([PATH, 'bin', 'hamcrest-core-1.3.jar'])
+EVOSUITE = os.sep.join([PATH, 'bin', 'evosuite-standalone-runtime-1.0.6.jar'])
+JMOCKIT = os.sep.join([PATH, 'bin', 'jmockit-1.40-marcio.1.jar'])
 
 
 class JUnit:

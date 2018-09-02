@@ -4,10 +4,12 @@ import json
 
 from hunor.utils import get_class_files, generate_classpath
 
-EVOSUITE = os.path.abspath(os.sep.join(['..', 'bin', 'evosuite-1.0.6.jar']))
-EVOSUITE_RUNTIME = os.path.abspath(os.sep.join(['..', 'bin', 'evosuite-standalone-runtime-1.0.6.jar']))
-JUNIT = os.path.abspath(os.sep.join(['..', 'bin', 'junit-4.12.jar']))
-HAMCREST = os.path.abspath(os.sep.join(['..', 'bin', 'hamcrest-core-1.3.jar']))
+PATH = os.path.dirname(os.path.abspath(__file__))
+
+EVOSUITE = os.sep.join([PATH, 'bin', 'evosuite-1.0.6.jar'])
+EVOSUITE_RUNTIME = os.sep.join([PATH, 'bin', 'evosuite-standalone-runtime-1.0.6.jar'])
+JUNIT = os.sep.join([PATH, 'bin', 'junit-4.12.jar'])
+HAMCREST = os.sep.join([PATH, 'bin', 'hamcrest-core-1.3.jar'])
 TOOL = 'evosuite'
 
 
@@ -34,7 +36,6 @@ class Evosuite:
             '-projectCP', self.classpath,
             '-class', self.sut_class
         ]
-
         command += self.parameters
 
         try:

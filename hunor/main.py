@@ -2,6 +2,8 @@ import os
 import shutil
 
 from argparse import ArgumentParser
+
+from hunor.utils import get_class_files
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
 from hunor.tools.randoop import Randoop
@@ -72,10 +74,10 @@ def main():
     test_suites = _generate_test_suites(options, jdk, classpath)
     junit = JUnit(jdk, options.sut_class, classpath, source_dir)
 
-    equivalence_analysis(options, junit, test_suites)
+    equivalence_analysis(options, jdk, junit, classpath, test_suites)
 
 
-def equivalence_analysis(options, junit, test_suites):
+def equivalence_analysis(options, jdk, junit, classpath, test_suites):
     major = Major(os.path.abspath(options.mutants))
     mutants = major.read_log()
 
@@ -84,13 +86,14 @@ def equivalence_analysis(options, junit, test_suites):
         print("RUNNING TEST SUITES FOR ALL MUTANTS...")
         for i in mutants:
             print("\tmutant: {0}#{1}...".format(mutants[i]['operator'], mutants[i]['id']))
-            mutants[i]['result'] = junit.run_test_suites(
-                test_suites,
-                os.path.join(os.path.abspath(options.mutants), str(mutants[i]['id'])),
-                mutants[i]['line_number']
-            )
 
-            print(mutants[i]['result'])
+            mutant_dir = os.path.join(os.path.abspath(options.mutants), str(mutants[i]['id']))
+
+            for java_file in get_class_files(mutant_dir, ext='.java'):
+                jdk.run_javac(java_file, 60, mutant_dir, "-classpath", classpath)
+
+            mutants[i]['result'] = junit.run_test_suites(test_suites, mutant_dir, mutants[i]['line_number'])
+
             coverage = mutants[i]['result'][0]['coverage'] + mutants[i]['result'][1]['coverage']
             fail = mutants[i]['result'][0]['fail'] or mutants[i]['result'][1]['fail']
 

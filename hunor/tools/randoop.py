@@ -5,9 +5,12 @@ import json
 from hunor.utils import generate_classpath
 from hunor.utils import get_class_files
 
-RANDOOP = os.path.abspath(os.sep.join(['..', 'bin', 'randoop-all-4.0.3.jar']))
-JUNIT = os.path.abspath(os.sep.join(['..', 'bin', 'junit-4.12.jar']))
-HAMCREST = os.path.abspath(os.sep.join(['..', 'bin', 'hamcrest-core-1.3.jar']))
+
+PATH = os.path.dirname(os.path.abspath(__file__))
+
+RANDOOP = os.sep.join([PATH, 'bin', 'randoop-all-4.0.3.jar'])
+JUNIT = os.sep.join([PATH, 'bin', 'junit-4.12.jar'])
+HAMCREST = os.sep.join([PATH, 'bin', 'hamcrest-core-1.3.jar'])
 TOOL = 'randoop'
 
 
