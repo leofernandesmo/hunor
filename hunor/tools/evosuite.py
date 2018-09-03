@@ -7,7 +7,8 @@ from hunor.utils import get_class_files, generate_classpath
 PATH = os.path.dirname(os.path.abspath(__file__))
 
 EVOSUITE = os.sep.join([PATH, 'bin', 'evosuite-1.0.6.jar'])
-EVOSUITE_RUNTIME = os.sep.join([PATH, 'bin', 'evosuite-standalone-runtime-1.0.6.jar'])
+EVOSUITE_RUNTIME = os.sep.join(
+    [PATH, 'bin', 'evosuite-standalone-runtime-1.0.6.jar'])
 JUNIT = os.sep.join([PATH, 'bin', 'junit-4.12.jar'])
 HAMCREST = os.sep.join([PATH, 'bin', 'hamcrest-core-1.3.jar'])
 TOOL = 'evosuite'
@@ -50,12 +51,14 @@ class Evosuite:
     def _compile(self):
         os.mkdir(self.tests_classes)
 
-        classpath = generate_classpath([self.classpath, self.tests_src, JUNIT, HAMCREST, EVOSUITE_RUNTIME])
+        classpath = generate_classpath([self.classpath, self.tests_src, JUNIT,
+                                        HAMCREST, EVOSUITE_RUNTIME])
 
-        for java_test_file in sorted(get_class_files(self.tests_src, ext='.java')):
-            self.jdk.run_javac(os.path.join(self.tests_src, java_test_file), 36000,
-                               self.tests_src, '-classpath', classpath, '-d',
-                               self.tests_classes)
+        for java_test_file in sorted(get_class_files(
+                self.tests_src, ext='.java')):
+            self.jdk.run_javac(os.path.join(self.tests_src, java_test_file),
+                               36000, self.tests_src, '-classpath', classpath,
+                               '-d', self.tests_classes)
 
         return self._test_classes()
 

@@ -53,12 +53,14 @@ class Randoop:
     def _compile(self):
         os.mkdir(self.tests_classes)
 
-        classpath = generate_classpath([self.classpath, self.tests_src, JUNIT, HAMCREST])
+        classpath = generate_classpath([self.classpath, self.tests_src, JUNIT,
+                                        HAMCREST])
 
-        for java_test_file in sorted(get_class_files(self.tests_src, ext='.java')):
-            self.jdk.run_javac(os.path.join(self.tests_src, java_test_file), 36000,
-                               self.tests_src, '-classpath', classpath, '-d',
-                               self.tests_classes)
+        for java_test_file in sorted(get_class_files(
+                self.tests_src, ext='.java')):
+            self.jdk.run_javac(os.path.join(self.tests_src, java_test_file),
+                               36000, self.tests_src, '-classpath', classpath,
+                               '-d', self.tests_classes)
 
         return self._test_classes()
 

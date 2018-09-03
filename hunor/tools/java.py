@@ -19,8 +19,10 @@ class JDK:
                 raise SystemExit()
 
         try:
-            self.javac = os.path.join(self.java_home, os.sep.join(['bin', 'javac']))
-            self.java = os.path.join(self.java_home, os.sep.join(['jre', 'bin', 'java']))
+            self.javac = os.path.join(self.java_home, os.sep.join(
+                ['bin', 'javac']))
+            self.java = os.path.join(self.java_home, os.sep.join(
+                ['jre', 'bin', 'java']))
             self.run_javac(None, 10, None, '-version')
 
         except OSError:
@@ -34,8 +36,10 @@ class JDK:
             if java_file:
                 command.append(java_file)
 
-            subprocess.call(command, stdout=subprocess.DEVNULL, timeout=timeout, cwd=cwd)
+            subprocess.call(command, stdout=subprocess.DEVNULL, timeout=timeout,
+                            cwd=cwd)
         except subprocess.CalledProcessError:
-            print("Cannot compile {0} with arguments {1}".format(java_file, args))
+            print("Cannot compile {0} with arguments {1}".format(
+                java_file, args))
         except subprocess.TimeoutExpired:
             print("javac timeout compiling {0}".format(java_file))

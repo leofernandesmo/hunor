@@ -22,7 +22,8 @@ class JUnit:
         self.classpath = classpath
         self.source_dir = source_dir
 
-    def _run_test(self, test_suite, test_classes_dir, test_class, mutant_classpath=''):
+    def _run_test(self, test_suite, test_classes_dir, test_class,
+                  mutant_classpath=''):
 
         classpath = generate_classpath([
             JMOCKIT, JUNIT, HAMCREST, EVOSUITE,
@@ -42,7 +43,9 @@ class JUnit:
         ]
 
         try:
-            subprocess.check_output(command, shell=False, cwd=test_suite, stderr=subprocess.DEVNULL, timeout=(60 * 10))
+            subprocess.check_output(command, shell=False, cwd=test_suite,
+                                    stderr=subprocess.DEVNULL,
+                                    timeout=(60 * 10))
             return True
         except subprocess.CalledProcessError:
             return False
@@ -52,7 +55,8 @@ class JUnit:
     def _run_test_suite(self, test_suite, mutant_classpath):
         success = True
         for test_class in test_suite['classes']:
-            if not self._run_test(test_suite['source_dir'], test_suite['classes_dir'],
+            if not self._run_test(test_suite['source_dir'],
+                                  test_suite['classes_dir'],
                                   test_class, mutant_classpath):
                 success = False
         return success
@@ -60,16 +64,18 @@ class JUnit:
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line):
         test_suites = test_suites.copy()
         for test_suite in test_suites:
-            test_suite['fail'] = not self._run_test_suite(test_suite, mutant_classpath)
-            test_suite['coverage'] = self._count_line_coverage(test_suite['source_dir'],
-                                                               mutation_line)
+            test_suite['fail'] = not self._run_test_suite(
+                test_suite, mutant_classpath)
+            test_suite['coverage'] = self._count_line_coverage(
+                test_suite['source_dir'], mutation_line)
 
         return test_suites
 
     def _count_line_coverage(self, output_dir, mutation_line):
 
         report_html_path = os.path.join(
-            output_dir, 'coverage-report', self.sut_class.replace('.', os.sep) + '.html')
+            output_dir, 'coverage-report',
+            self.sut_class.replace('.', os.sep) + '.html')
 
         total = 0
 

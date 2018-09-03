@@ -12,7 +12,7 @@ setup(
     name='hunor',
     description='The son of Nimrod',
     long_description=readme(),
-    keywords='test mutant analysis',
+    keywords='test mutant analysis equivalent',
     version='0.0.0',
     url='https://github.com/marcioaug/hunor',
     author='Marcio Augusto Guimarães',
@@ -35,7 +35,7 @@ setup(
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3',
         'Topic :: Test :: Mutation'
     ]
 )
