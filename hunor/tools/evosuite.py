@@ -1,8 +1,7 @@
 import os
 import subprocess
-import json
 
-from hunor.utils import get_class_files, generate_classpath
+from hunor.utils import get_class_files, generate_classpath, config
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,7 +15,7 @@ TOOL = 'evosuite'
 
 class Evosuite:
 
-    def __init__(self, jdk, classpath, config, tests_dir, sut_class):
+    def __init__(self, jdk, classpath, config_file, tests_dir, sut_class):
         self.jdk = jdk
         self.tool_tests_dir = os.path.join(tests_dir, TOOL)
         self.tests_dir = tests_dir
@@ -24,10 +23,7 @@ class Evosuite:
         self.classpath = classpath
         self.tests_src = os.path.join(self.tool_tests_dir, 'evosuite-tests')
         self.tests_classes = os.path.join(self.tool_tests_dir, 'classes')
-        self.parameters = []
-
-        with open(config, 'r') as c:
-            self.parameters = json.loads(c.read())[TOOL]['parameters']
+        self.parameters = config(config_file)[TOOL]['parameters']
 
     def _exec_tool(self):
         print("TEST SUITE: generating with {0}.".format(TOOL))

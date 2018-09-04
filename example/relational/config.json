@@ -1,4 +1,6 @@
 {
+  "project": "relational",
+  "source": ["."],
   "randoop": {
     "parameters": [
         "--output-limit=100",

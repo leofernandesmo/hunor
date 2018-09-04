@@ -4,9 +4,9 @@ import subprocess
 
 class Maven:
 
-    def __init__(self, maven_home, javac):
+    def __init__(self, maven_home, jdk):
         self.maven_home = maven_home
-        self.javac = javac
+        self.jdk = jdk
         self._check_maven()
 
     def _check_maven(self):
@@ -35,7 +35,7 @@ class Maven:
         command = command + list(args)
 
         env = os.environ.copy()
-        env['JAVA_HOME'] = self.javac.java_home
+        env['JAVA_HOME'] = self.jdk.java_home
 
         subprocess.call(command, cwd=project_dir, env=env, timeout=timeout,
                         stdout=subprocess.DEVNULL)
@@ -59,3 +59,6 @@ class Maven:
         except subprocess.TimeoutExpired:
             print('# ERROR: Maven compile timed out.')
             raise SystemError
+
+    def compile_project(self, project_dir):
+        return self.compile(project_dir)

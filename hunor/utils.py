@@ -1,4 +1,5 @@
 import os
+import json
 
 
 def get_class_files(path, package='', ext='.class'):
@@ -17,3 +18,8 @@ def get_class_files(path, package='', ext='.class'):
 
 def generate_classpath(paths):
     return os.pathsep.join(paths)
+
+
+def config(path):
+    with open(path, 'r') as c:
+        return json.loads(c.read())

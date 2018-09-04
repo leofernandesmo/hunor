@@ -32,13 +32,12 @@ def arg_parser():
 
     parser.add_argument('-s', '--source',
                         action='store',
-                        dest='source',
-                        required=True)
+                        dest='source')
 
     parser.add_argument('-o', '--output',
                         action='store',
                         dest='output',
-                        default='output')
+                        default='hunor-output')
 
     parser.add_argument('--mutants',
                         action='store',
