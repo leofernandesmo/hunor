@@ -47,7 +47,7 @@ def arg_parser():
     parser.add_argument('--coverage-threshold',
                         action='store',
                         dest='coverage_threshold',
-                        default='0')
+                        default='1')
 
     parser.add_argument('--class',
                         action='store',

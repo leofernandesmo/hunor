@@ -76,4 +76,3 @@ class Randoop:
 
     def _test_classes(self):
         return ['RegressionTest']
-

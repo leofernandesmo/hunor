@@ -54,20 +54,21 @@ class JUnit:
 
     def _run_test_suite(self, test_suite, mutant_classpath):
         success = True
-        for test_class in test_suite['classes']:
-            if not self._run_test(test_suite['source_dir'],
-                                  test_suite['classes_dir'],
+        for test_class in test_suite.classes:
+            if not self._run_test(test_suite.source_dir,
+                                  test_suite.classes_dir,
                                   test_class, mutant_classpath):
                 success = False
         return success
 
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line):
         test_suites = test_suites.copy()
-        for test_suite in test_suites:
-            test_suite['fail'] = not self._run_test_suite(
+        for t in test_suites:
+            test_suite = test_suites[t]
+            test_suite.fail = not self._run_test_suite(
                 test_suite, mutant_classpath)
-            test_suite['coverage'] = self._count_line_coverage(
-                test_suite['source_dir'], mutation_line)
+            test_suite.coverage = self._count_line_coverage(
+                test_suite.source_dir, mutation_line)
 
         return test_suites
 

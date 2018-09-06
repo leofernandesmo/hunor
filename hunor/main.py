@@ -9,7 +9,7 @@ from hunor.tools.maven import Maven
 from hunor.tools.junit import JUnit
 from hunor.args import arg_parser
 from hunor.tools.testsuite import generate_test_suites
-from hunor.tools.nimrod import equivalence_analysis
+from hunor.mutation.nimrod import equivalence_analysis
 
 
 def _set_source_dir(options):
