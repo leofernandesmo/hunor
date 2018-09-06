@@ -19,24 +19,39 @@ def equivalence_analysis(options, jdk, junit, classpath, test_suites):
                 jdk.run_javac(
                     java_file, 60, mutant.path, "-classpath", classpath)
 
-            mutant.result['test_suites'] = junit.run_test_suites(
+            mutant.result.test_suites = junit.run_test_suites(
                 test_suites, mutant.path, mutant.line_number)
 
             coverage = 0
             fail = False
             coverage_log = []
+            tests_total = 0
+            fail_tests_total = 0
+            fail_tests = set()
 
-            for r in mutant.result['test_suites']:
-                coverage += mutant.result['test_suites'][r].coverage
-                fail = fail or mutant.result['test_suites'][r].fail
+            for r in mutant.result.test_suites:
+                coverage += mutant.result.test_suites[r].coverage
+                fail = fail or mutant.result.test_suites[r].fail
+                tests_total += mutant.result.test_suites[r].tests_total
+                fail_tests_total += (mutant.result.test_suites[r]
+                                     .fail_tests_total)
+                fail_tests = fail_tests.union(
+                    mutant.result.test_suites[r].fail_tests)
+
                 coverage_log.append('{0}: {1}'.format(
-                    r, mutant.result['test_suites'][r].coverage))
+                    r, mutant.result.test_suites[r].coverage))
 
-            print('\t\tCoverage: {0} ({1})'.format(coverage, ', '.join(coverage_log)))
+            print('\t\tcoverage: {0} ({1}) tests fail: {2}/{3}'.format(
+                coverage, ', '.join(coverage_log), fail_tests_total,
+                tests_total))
+            # print('\t\tfail: {0}'.format(fail_tests))
 
             if coverage >= int(options.coverage_threshold) and not fail:
-                print('\t\tTHE MUTANT IS EQUIVALENT!')
+                print('\t\t >>> THIS MUTANT MAY BE EQUIVALENT!')
+                mutant.maybe_equivalent = True
                 f.write('{0},{1},{2}\n'.format(mutant.id, 'x', coverage))
             else:
                 f.write('{0},{1},{2}\n'.format(mutant.id, '', coverage))
         f.close()
+
+    return mutants

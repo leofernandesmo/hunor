@@ -1,3 +1,7 @@
+class Result:
+
+    def __init__(self):
+        self.test_suites = {}
 
 
 class Mutant:
@@ -11,13 +15,13 @@ class Mutant:
         self.method = method
         self.line_number = line_number
         self.transformation = transformation
-        self.is_equivalent = False
+        self.maybe_equivalent = False
         self.has_brother = False
         self.brothers = set()
         self.subsumes = set()
         self.subsumed_by = set()
         self.path = path
-        self.result = {}
+        self.result = Result
 
     def __str__(self):
         return '{0}#{1}'.format(self.operator, self.id)

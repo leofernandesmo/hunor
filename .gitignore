@@ -12,6 +12,6 @@ env/
 *.iml
 
 target/
-/output/
-/output/tests
-/hunor-output/
+output/
+output/tests
+hunor-output/

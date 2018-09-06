@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 
 from bs4 import BeautifulSoup
@@ -43,32 +44,47 @@ class JUnit:
         ]
 
         try:
-            subprocess.check_output(command, shell=False, cwd=test_suite,
-                                    stderr=subprocess.DEVNULL,
-                                    timeout=(60 * 10))
-            return True
-        except subprocess.CalledProcessError:
-            return False
+            output = subprocess.check_output(command, shell=False,
+                                             cwd=test_suite,
+                                             stderr=subprocess.DEVNULL,
+                                             timeout=(60 * 10))
+            return _extract_results_ok(output)
+        except subprocess.CalledProcessError as e:
+            return _extract_results(e.output.decode('unicode_escape'))
         except subprocess.TimeoutExpired:
             print("# ERROR: Run JUnit tests timed out.")
 
-    def _run_test_suite(self, test_suite, mutant_classpath):
-        success = True
+    def _run_test_suite(self, test_suite, mutant_classpath, mutation_line=0):
+        total = 0
+        fail = 0
+        fail_tests = set()
+        coverage = 0
+
         for test_class in test_suite.classes:
-            if not self._run_test(test_suite.source_dir,
-                                  test_suite.classes_dir,
-                                  test_class, mutant_classpath):
-                success = False
-        return success
+            t, f, f_s = self._run_test(test_suite.source_dir,
+                                       test_suite.classes_dir,
+                                       test_class, mutant_classpath)
+
+            total += t
+            fail += f
+            fail_tests = fail_tests.union(f_s)
+            coverage += self._count_line_coverage(test_suite.source_dir,
+                                                  mutation_line)
+
+        return total, fail, fail_tests, coverage
 
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line):
         test_suites = test_suites.copy()
         for t in test_suites:
             test_suite = test_suites[t]
-            test_suite.fail = not self._run_test_suite(
-                test_suite, mutant_classpath)
-            test_suite.coverage = self._count_line_coverage(
-                test_suite.source_dir, mutation_line)
+            total, fail, fail_tests, coverage = self._run_test_suite(
+                test_suite, mutant_classpath, mutation_line)
+
+            test_suite.fail = (fail != 0)
+            test_suite.coverage = coverage
+            test_suite.tests_total = total
+            test_suite.fail_tests_total = fail
+            test_suite.fail_tests = fail_tests
 
         return test_suites
 
@@ -92,3 +108,35 @@ class JUnit:
                 html.close()
 
         return total
+
+
+def _extract_results_ok(output):
+    result = re.findall(r'OK \([0-9]* tests?\)', output)[0]
+    result = result.replace('(', '')
+    r = [int(s) for s in result.split() if s.isdigit()]
+
+    return r[0], 0, set()
+
+
+def _extract_results(output):
+    result = re.findall(r'Tests run: [0-9]*,[ ]{2}Failures: [0-9]*', output)[0]
+    result = result.replace(',', ' ')
+    r = [int(s) for s in result.split() if s.isdigit()]
+    tests_fail = _extract_test_id(output)
+
+    return r[0], r[1], tests_fail
+
+
+def _extract_test_id(output):
+    tests_fail = set()
+    for test in re.findall(r'\.test[0-9]+\([A-Za-z0-9_]+\.java:[0-9]+\)', output):
+        i = re.findall('\d+', test)
+        file = re.findall(r'\(.+?(?=\.)', test)[0][1:]
+        test_case = re.findall(r'\..+?(?=\()', test)[0][1:]
+
+        if len(i) > 0:
+            tests_fail.add('{0}#{1}'.format(file, test_case, int(i[-1])))
+        else:
+            print("*** ERROR: Error in regex of junit output.")
+
+    return tests_fail

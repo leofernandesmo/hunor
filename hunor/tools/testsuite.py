@@ -13,6 +13,9 @@ class TestSuiteResult:
         self.classes = classes
         self.coverage = 0
         self.fail = False
+        self.tests_total = 0
+        self.fail_tests_total = 0
+        self.fail_tests = 0
 
 
 def generate_test_suites(options, jdk, classpath):
