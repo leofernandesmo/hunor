@@ -54,4 +54,10 @@ def arg_parser():
                         dest='sut_class',
                         required=True)
 
+    parser.add_argument('--mutation-tool',
+                        action='store',
+                        dest='mutation_tool',
+                        choices=['major', 'mujava', 'pit'],
+                        required=True)
+
     return parser

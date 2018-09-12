@@ -33,13 +33,20 @@ class JUnit:
             self.classpath,
         ])
 
+        coverage_source_dirs = self.source_dir
+
+        if os.path.exists(
+                os.path.join(mutant_classpath,
+                             self.sut_class.replace('.', os.sep) + '.java')):
+                coverage_source_dirs = mutant_classpath
+
         command = [
             self.jdk.java,
             '-classpath', classpath,
             '-Dcoverage-classes=' + self.sut_class,
             '-Dcoverage-output=html',
             '-Dcoverage-metrics=line',
-            '-Dcoverage-srcDirs=' + self.source_dir,
+            '-Dcoverage-srcDirs=' + coverage_source_dirs,
             'org.junit.runner.JUnitCore', test_class
         ]
 
@@ -48,7 +55,7 @@ class JUnit:
                                              cwd=test_suite,
                                              stderr=subprocess.DEVNULL,
                                              timeout=(60 * 10))
-            return _extract_results_ok(output)
+            return _extract_results_ok(output.decode('unicode_escape'))
         except subprocess.CalledProcessError as e:
             return _extract_results(e.output.decode('unicode_escape'))
         except subprocess.TimeoutExpired:

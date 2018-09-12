@@ -1,0 +1,24 @@
+AOIS_1:15:boolean_function(int,int):var1 => ++var1
+AOIS_2:15:boolean_function(int,int):var1 => --var1
+AOIS_3:15:boolean_function(int,int):var1 => var1++
+AOIS_4:15:boolean_function(int,int):var1 => var1--
+AOIS_5:15:boolean_function(int,int):var2 => ++var2
+AOIS_6:15:boolean_function(int,int):var2 => --var2
+AOIS_7:15:boolean_function(int,int):var2 => var2++
+AOIS_8:15:boolean_function(int,int):var2 => var2--
+ROR_1:15:boolean_function(int,int): var1 >= var2  =>   var1 > var2
+ROR_2:15:boolean_function(int,int): var1 >= var2  =>   var1 < var2
+ROR_3:15:boolean_function(int,int): var1 >= var2  =>   var1 <= var2
+ROR_4:15:boolean_function(int,int): var1 >= var2  =>   var1 == var2
+ROR_5:15:boolean_function(int,int): var1 >= var2  =>   var1 != var2
+ROR_6:15:boolean_function(int,int): var1 >= var2  =>   true
+ROR_7:15:boolean_function(int,int): var1 >= var2  =>   false
+COI_1:15:boolean_function(int,int): var1 >= var2  =>  !(var1 >= var2)
+LOI_1:15:boolean_function(int,int):var1 => ~var1
+LOI_2:15:boolean_function(int,int):var2 => ~var2
+SDL_1:16:boolean_function(int,int): return var1 >= var2;  =>   return true;
+SDL_2:16:boolean_function(int,int): return var1 >= var2;  =>   return false;
+VDL_1:15:boolean_function(int,int):var1 >= var2 => var2
+VDL_2:15:boolean_function(int,int):var1 >= var2 => var1
+ODL_1:15:boolean_function(int,int):var1 >= var2 => var1
+ODL_2:15:boolean_function(int,int):var1 >= var2 => var2
