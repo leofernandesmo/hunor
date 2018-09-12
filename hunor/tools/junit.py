@@ -1,5 +1,6 @@
 import os
 import re
+import copy
 import subprocess
 
 from bs4 import BeautifulSoup
@@ -81,7 +82,7 @@ class JUnit:
         return total, fail, fail_tests, coverage
 
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line):
-        test_suites = test_suites.copy()
+        test_suites = copy.deepcopy(test_suites)
         for t in test_suites:
             test_suite = test_suites[t]
             total, fail, fail_tests, coverage = self._run_test_suite(

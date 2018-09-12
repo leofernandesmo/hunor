@@ -75,6 +75,8 @@ def equivalence_analysis(options, jdk, junit, classpath, test_suites):
             else:
                 print('\t\tWARNING: mutant directory not found: {0}'
                       .format(mutant.path))
+                mutant.is_invalid = True
+
         f.close()
 
     return mutants

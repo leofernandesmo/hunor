@@ -1,6 +1,5 @@
 __pycache__/
 *.py[cod]
-*.class
 /dist/
 /*.egg-info
 
@@ -15,3 +14,6 @@ target/
 output/
 output/tests
 hunor-output/
+
+**/major/**/*.class
+**/mujava/**/*.class

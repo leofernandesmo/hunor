@@ -10,6 +10,7 @@ from hunor.tools.junit import JUnit
 from hunor.args import arg_parser
 from hunor.tools.testsuite import generate_test_suites
 from hunor.mutation.nimrod import equivalence_analysis
+from hunor.mutation.subsuming import subsuming
 
 
 def _set_source_dir(options):
@@ -46,7 +47,8 @@ def main():
     test_suites = generate_test_suites(options, jdk, classpath)
     junit = JUnit(jdk, options.sut_class, classpath, options.source)
 
-    equivalence_analysis(options, jdk, junit, classpath, test_suites)
+    mutants = equivalence_analysis(options, jdk, junit, classpath, test_suites)
+    subsuming(mutants)
 
 
 if __name__ == '__main__':
