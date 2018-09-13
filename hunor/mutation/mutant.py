@@ -23,6 +23,7 @@ class Mutant:
         self.path = path
         self.result = Result()
         self.is_invalid = False
+        self.label = mid
 
     def __str__(self):
         return '{0}#{1}'.format(self.operator, self.id)
@@ -62,6 +63,18 @@ class Mutant:
                 and fail_tests_a.issubset(fail_tests_b))
 
     def to_dict(self):
+
+        subsumes = []
+        subsumed_by = []
+
+        for m in self.subsumes:
+            if m.label != self.label and m.label not in subsumes:
+                subsumes.append(m.label)
+
+        for m in self.subsumed_by:
+            if m.label != self.label and m.label not in subsumed_by:
+                subsumed_by.append(m.label)
+
         return {
             'id': str(self.id),
             'operator': self.operator,
@@ -73,8 +86,35 @@ class Mutant:
             'maybe_equivalent': self.maybe_equivalent,
             'has_brother': self.has_brother,
             'brothers': [str(m.id) for m in self.brothers],
-            'subsumes': [str(m.id) for m in self.subsumes],
-            'subsumed_by': [str(m.id) for m in self.subsumed_by],
+            'subsumes': subsumes,
+            'subsumed_by': subsumed_by,
             'path': self.path,
-            'is_invalid': self.is_invalid
+            'is_invalid': self.is_invalid,
+            'label': self.label
         }
+
+    def set_as_brother(self, brother):
+        self.has_brother = True
+        if brother not in self.brothers:
+            self.brothers.append(brother)
+
+        brother.has_brother = True
+        if self not in brother.brothers:
+            brother.brothers.append(self)
+
+        all_brothers = set()
+
+        for b in self.brothers:
+            all_brothers.add(b.id)
+
+        for b in brother.brothers:
+            all_brothers.add(b.id)
+
+        label = _create_label(all_brothers)
+
+        self.label = label
+        brother.label = label
+
+
+def _create_label(brothers):
+    return ' '.join(sorted(list(brothers)))
