@@ -18,7 +18,7 @@ setup(
     author='Marcio Augusto Guimarães',
     author_email='masg@ic.ufal.br',
     license='MIT',
-    packages=['hunor', 'hunor.tools'],
+    packages=['hunor', 'hunor.tools', 'hunor.mutation'],
     install_requires=[
         'argparse==1.4.0',
         'beautifulsoup4==4.6.0',

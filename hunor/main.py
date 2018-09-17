@@ -50,7 +50,10 @@ class Hunor:
             output=self.options.output
         )
 
-        create_dmsg(mutants=subsuming(mutants), export_dir=self.options.output)
+        mutants = subsuming(mutants)
+        create_dmsg(mutants=mutants, export_dir=self.options.output)
+
+        return mutants
 
 
 def main():

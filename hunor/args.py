@@ -15,16 +15,16 @@ DEFAULT = {
 
 class Options:
 
-    def __init__(self, maven_home, java_home, is_randoop_disable,
-                 is_evosuite_disabled, config_file, mutants, sut_class,
+    def __init__(self, maven_home, java_home, config_file, mutants, sut_class,
                  mutation_tool, source=None, output=DEFAULT['output'],
+                 is_evosuite_disabled=False, is_randoop_disabled=False,
                  maven_timeout=DEFAULT['maven_timeout'],
                  coverage_threshold=DEFAULT['coverage_threshold']):
 
         self.maven_home = os.path.abspath(maven_home)
         self.java_home = os.path.abspath(java_home)
         self.maven_timeout = maven_timeout
-        self.is_randoop_disabled = is_randoop_disable
+        self.is_randoop_disabled = is_randoop_disabled
         self.is_evosuite_disabled = is_evosuite_disabled
         self.config_file = os.path.abspath(config_file)
         self.source = _set_source_dir(source, self.config_file)
@@ -59,7 +59,7 @@ def to_options(parser):
     return Options(
         maven_home=o.maven_home,
         java_home=o.java_home,
-        is_randoop_disable=o.is_randoop_disabled,
+        is_randoop_disabled=o.is_randoop_disabled,
         is_evosuite_disabled=o.is_evosuite_disabled,
         config_file=o.config_file,
         source=o.source,
