@@ -13,7 +13,7 @@ setup(
     description='The son of Nimrod',
     long_description=readme(),
     keywords='test mutant analysis equivalent',
-    version='0.1.0',
+    version='0.2.0',
     url='https://github.com/marcioaug/hunor',
     author='Marcio Augusto Guimarães',
     author_email='masg@ic.ufal.br',
@@ -21,7 +21,8 @@ setup(
     packages=['hunor', 'hunor.tools'],
     install_requires=[
         'argparse==1.4.0',
-        'beautifulsoup4==4.6.0'
+        'beautifulsoup4==4.6.0',
+        'graphviz==0.8.3'
     ],
     test_suite='nose.collector',
     tests_require=[

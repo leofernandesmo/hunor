@@ -1,54 +1,60 @@
 #!/usr/bin/env python3
-
-import os
-import shutil
-
-from hunor.utils import config
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
 from hunor.tools.junit import JUnit
-from hunor.args import arg_parser
+from hunor.args import arg_parser, to_options
 from hunor.tools.testsuite import generate_test_suites
 from hunor.mutation.nimrod import equivalence_analysis
-from hunor.mutation.subsuming import subsuming
+from hunor.mutation.subsuming import subsuming, create_dmsg
 
 
-def _set_source_dir(options):
-    if options.source:
-        return os.path.abspath(options.source)
+class Hunor:
 
-    return os.path.join(
-        os.path.dirname(options.config_file),
-        os.sep.join(config(options.config_file)['source'])
-    )
+    def __init__(self, options):
+        self.options = options
 
+    def run(self):
+        jdk = JDK(self.options.java_home)
 
-def _set_output_dir(options):
-    if os.path.exists(options.output):
-        shutil.rmtree(options.output)
-    os.mkdir(options.output)
+        classpath = Maven(
+            jdk=jdk,
+            maven_home=self.options.maven_home,
+        ).compile_project(self.options.source)
 
-    return options.output
+        test_suites = generate_test_suites(
+            jdk=jdk,
+            classpath=classpath,
+            config_file=self.options.config_file,
+            sut_class=self.options.sut_class,
+            output=self.options.output,
+            is_randoop_disabled=self.options.is_randoop_disabled,
+            is_evosuite_disabled=self.options.is_evosuite_disabled
+        )
+
+        junit = JUnit(
+            jdk=jdk,
+            sut_class=self.options.sut_class,
+            classpath=classpath,
+            source_dir=self.options.source
+        )
+
+        mutants = equivalence_analysis(
+            jdk=jdk,
+            junit=junit,
+            classpath=classpath,
+            test_suites=test_suites,
+            mutants=self.options.mutants,
+            mutation_tool=self.options.mutation_tool,
+            sut_class=self.options.sut_class,
+            coverage_threshold=self.options.coverage_threshold,
+            output=self.options.output
+        )
+
+        create_dmsg(mutants=subsuming(mutants), export_dir=self.options.output)
 
 
 def main():
-    parser = arg_parser()
-
-    options = parser.parse_args()
-
-    options.output = os.path.abspath(options.output)
-    options.config_file = os.path.abspath(options.config_file)
-    options.source = _set_source_dir(options)
-    options.output = _set_output_dir(options)
-
-    jdk = JDK(options.java_home)
-
-    classpath = Maven(options.maven_home, jdk).compile_project(options.source)
-    test_suites = generate_test_suites(options, jdk, classpath)
-    junit = JUnit(jdk, options.sut_class, classpath, options.source)
-
-    mutants = equivalence_analysis(options, jdk, junit, classpath, test_suites)
-    subsuming(mutants)
+    Hunor(to_options(arg_parser())).run()
 
 
 if __name__ == '__main__':

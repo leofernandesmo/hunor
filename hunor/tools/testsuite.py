@@ -18,22 +18,32 @@ class TestSuiteResult:
         self.fail_tests = 0
 
 
-def generate_test_suites(options, jdk, classpath):
-    tests_dir = os.path.join(options.output, 'tests')
+def generate_test_suites(jdk, classpath, config_file, sut_class, output,
+                         is_randoop_disabled, is_evosuite_disabled):
+
+    tests_dir = os.path.join(output, 'tests')
     test_suites = {}
 
-    if not options.is_randoop_disabled:
-        randoop = Randoop(jdk, classpath, options.config_file, tests_dir,
-                          options.sut_class)
+    if not is_randoop_disabled:
+        randoop = Randoop(jdk, classpath, config_file, tests_dir, sut_class)
         source_dir, classes_dir, classes = randoop.generate()
-        test_suites['randoop'] = TestSuiteResult('RAN', source_dir,
-                                                 classes_dir, classes)
 
-    if not options.is_evosuite_disabled:
-        evosuite = Evosuite(jdk, classpath, options.config_file, tests_dir,
-                            options.sut_class)
+        test_suites['randoop'] = TestSuiteResult(
+            tid='RAN',
+            source_dir=source_dir,
+            classes_dir=classes_dir,
+            classes=classes
+        )
+
+    if not is_evosuite_disabled:
+        evosuite = Evosuite(jdk, classpath, config_file, tests_dir, sut_class)
         source_dir, classes_dir, classes = evosuite.generate()
-        test_suites['evosuite'] = TestSuiteResult('EVO', source_dir,
-                                                  classes_dir, classes)
+
+        test_suites['evosuite'] = TestSuiteResult(
+            tid='EVO',
+            source_dir=source_dir,
+            classes_dir=classes_dir,
+            classes=classes
+        )
 
     return test_suites

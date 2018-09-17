@@ -7,20 +7,20 @@ from hunor.tools.mujava import MuJava
 from hunor.tools.pit import Pit
 
 
-def equivalence_analysis(options, jdk, junit, classpath, test_suites):
+def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
+                         mutation_tool, sut_class, coverage_threshold,
+                         output):
 
-    mutation_tool = None
-
-    if options.mutation_tool == 'pit':
-        mutation_tool = Pit(os.path.abspath(options.mutants), options.sut_class)
-    elif options.mutation_tool == 'major':
-        mutation_tool = Major(os.path.abspath(options.mutants))
-    elif options.mutation_tool == 'mujava':
-        mutation_tool = MuJava(os.path.abspath(options.mutants))
+    if mutation_tool == 'pit':
+        mutation_tool = Pit(mutants, sut_class)
+    elif mutation_tool == 'major':
+        mutation_tool = Major(mutants)
+    elif mutation_tool == 'mujava':
+        mutation_tool = MuJava(mutants)
 
     mutants = mutation_tool.read_log()
 
-    with open(os.path.join(options.output, 'equivalents.csv'), 'w') as f:
+    with open(os.path.join(output, 'equivalents.csv'), 'w') as f:
         f.write('id,equivalent,coverage\n')
         print("RUNNING TEST SUITES FOR ALL MUTANTS...")
         for i in mutants:
@@ -54,7 +54,7 @@ def equivalence_analysis(options, jdk, junit, classpath, test_suites):
                     coverage_log.append('{0}: {1}'.format(
                         r, mutant.result.test_suites[r].coverage))
 
-                coverage_threshold = float(options.coverage_threshold)
+                coverage_threshold = float(coverage_threshold)
                 if coverage_threshold < 1:
                     coverage_threshold = math.ceil(
                         coverage_threshold * tests_total)

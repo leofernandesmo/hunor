@@ -1,4 +1,7 @@
+import os
+
 from itertools import combinations
+from graphviz import Digraph, ExecutableNotFound
 
 
 def subsuming(mutants):
@@ -23,8 +26,31 @@ def subsuming(mutants):
         if mutants[key].label not in d_mutants:
             d_mutants[mutants[key].label] = mutants[key].to_dict()
 
-    import json
-    print(json.dumps(d_mutants, indent=2))
+    return _clean_dmsg(d_mutants)
+
+
+def _clean_dmsg(mutants):
+    r = sorted(mutants.items(), key=lambda v: len(v[1]['subsumes']), reverse=True)
+    mutants = {}
+    for m in r:
+        mutants[m[0]] = dict(m[1])
+    for m in mutants:
+        all_subsumed = set()
+        for s in mutants[m]['subsumes']:
+            all_subsumed = _all_subsumed(mutants, mutants[s], all_subsumed)
+        for r in all_subsumed:
+            if r in mutants[m]['subsumes']:
+                mutants[m]['subsumes'].remove(r)
+
+    return mutants
+
+
+def _all_subsumed(mutants, mutant, subsumed):
+    subsumed = set(subsumed)
+    for m in mutant['subsumes']:
+        subsumed.add(m)
+        subsumed = _all_subsumed(mutants, mutants[m], subsumed)
+    return subsumed
 
 
 def _remove_invalid_and_equivalent(mutants):
@@ -34,3 +60,32 @@ def _remove_invalid_and_equivalent(mutants):
                 or mutants[key].is_invalid):
             del r[key]
     return r
+
+
+def create_dmsg(mutants, export_dir=''):
+    dot = Digraph()
+
+    for label, mutant in mutants.items():
+        dot.node(str(label), str(label))
+
+    for label, mutant in mutants.items():
+        for s in mutant['subsumes']:
+            dot.edge(str(s), str(label))
+
+    dot.encoding = 'utf-8'
+
+    try:
+        dot.format = 'svg'
+        dot.render(os.path.join(export_dir, 'DMSG'))
+    except ExecutableNotFound:
+        print("[WARNING]: Graphviz not found. "
+              "Install graphviz package for generate DMSG.")
+
+    try:
+        dot.format = 'png'
+        dot.render(os.path.join(export_dir, 'DMSG'))
+    except ExecutableNotFound:
+        print("[WARNING]: Graphviz not found. "
+              "Install graphviz package for generate DMSG.")
+
+    return dot

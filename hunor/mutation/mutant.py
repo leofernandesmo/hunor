@@ -117,4 +117,4 @@ class Mutant:
 
 
 def _create_label(brothers):
-    return ' '.join(sorted(list(brothers)))
+    return ', '.join(sorted(list(brothers)))
