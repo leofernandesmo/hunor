@@ -66,6 +66,7 @@ class Mutant:
 
         subsumes = []
         subsumed_by = []
+        test_suites = {}
 
         for m in self.subsumes:
             if m.label != self.label and m.label not in subsumes:
@@ -74,6 +75,9 @@ class Mutant:
         for m in self.subsumed_by:
             if m.label != self.label and m.label not in subsumed_by:
                 subsumed_by.append(m.label)
+
+        for t in self.result.test_suites:
+            test_suites[t] = self.result.test_suites[t].to_dict()
 
         return {
             'id': str(self.id),
@@ -90,7 +94,8 @@ class Mutant:
             'subsumed_by': subsumed_by,
             'path': self.path,
             'is_invalid': self.is_invalid,
-            'label': self.label
+            'label': self.label,
+            'test_suites': test_suites
         }
 
     def set_as_brother(self, brother):

@@ -15,7 +15,15 @@ class TestSuiteResult:
         self.fail = False
         self.tests_total = 0
         self.fail_tests_total = 0
-        self.fail_tests = 0
+        self.fail_tests = set()
+
+    def to_dict(self):
+        return {
+            'coverage': self.coverage,
+            'tests_total': self.tests_total,
+            'fail_tests_total': self.fail_tests_total,
+            'fail_tests': list(self.fail_tests)
+        }
 
 
 def generate_test_suites(jdk, classpath, config_file, sut_class, output,
