@@ -3,11 +3,11 @@
   "source": ["."],
   "randoop": {
     "parameters": [
-        "--output-limit=100",
-        "--maxsize=100",
-        "--testsperfile=2000",
+        "--output-limit=10000",
+        "--maxsize=4",
+        "--testsperfile=10000",
         "--only-test-public-members=true",
-        "--time-limit=10",
+        "--time-limit=300",
         "--flaky-test-behavior=DISCARD",
         "--usethreads=true",
         "--call_timeout=1000"

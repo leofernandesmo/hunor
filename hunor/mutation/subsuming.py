@@ -65,10 +65,10 @@ def _remove_invalid_and_equivalent(mutants):
 def create_dmsg(mutants, export_dir=''):
     dot = Digraph()
 
-    for label, mutant in mutants.items():
+    for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         dot.node(str(label), str(label))
 
-    for label, mutant in mutants.items():
+    for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         for s in mutant['subsumes']:
             dot.edge(str(s), str(label))
 
