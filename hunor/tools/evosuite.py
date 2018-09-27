@@ -36,13 +36,14 @@ class Evosuite:
         command += self.parameters
 
         try:
-            return subprocess.call(command, shell=False,
-                                   cwd=self.tool_tests_dir,
-                                   stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL,
-                                   timeout=36000)
+            return subprocess.check_output(command, shell=False,
+                                           cwd=self.tool_tests_dir,
+                                           timeout=36000)
         except subprocess.TimeoutExpired:
             print('# ERROR: {0} generate timed out.'.format(TOOL))
+        except subprocess.CalledProcessError as e:
+            print('# ERROR: {0} returned non-zero exit status.\n{1}'.format(
+                TOOL, e.output.decode('unicode_escape')))
 
     def _compile(self):
         os.mkdir(self.tests_classes)

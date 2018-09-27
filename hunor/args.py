@@ -21,8 +21,16 @@ class Options:
                  maven_timeout=DEFAULT['maven_timeout'],
                  coverage_threshold=DEFAULT['coverage_threshold']):
 
-        self.maven_home = os.path.abspath(maven_home)
-        self.java_home = os.path.abspath(java_home)
+        if maven_home:
+            self.maven_home = os.path.abspath(maven_home)
+        else:
+            self.maven_home = None
+
+        if java_home:
+            self.java_home = os.path.abspath(java_home)
+        else:
+            self.java_home = None
+
         self.maven_timeout = maven_timeout
         self.is_randoop_disabled = is_randoop_disabled
         self.is_evosuite_disabled = is_evosuite_disabled

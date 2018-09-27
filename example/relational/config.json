@@ -8,10 +8,7 @@
         "--testsperfile=2000",
         "--only-test-public-members=true",
         "--time-limit=10",
-        "--progressintervalsteps=-1",
-        "--progressintervalmillis=-1",
         "--flaky-test-behavior=DISCARD",
-        "--progressdisplay=false",
         "--usethreads=true",
         "--call_timeout=1000"
     ]
