@@ -1,21 +1,85 @@
 {
-  "project": "relational",
-  "source": ["."],
+  "source": [
+    "."
+  ],
   "randoop": {
     "parameters": [
-        "--output-limit=10000",
-        "--maxsize=4",
-        "--testsperfile=10000",
-        "--only-test-public-members=true",
-        "--time-limit=300",
-        "--flaky-test-behavior=DISCARD",
-        "--usethreads=true",
-        "--call_timeout=1000"
+      "--output-limit=10000",
+      "--maxsize=4",
+      "--testsperfile=10000",
+      "--only-test-public-members=true",
+      "--time-limit=60",
+      "--flaky-test-behavior=DISCARD",
+      "--usethreads=true",
+      "--call_timeout=1000"
     ]
   },
   "evosuite": {
     "parameters": [
-
+      "-Dsearch_budget=60",
+      "-Dmax_length_test_case=2500",
+      "-Dmax_size=100",
+      "-Dminimize=false",
+      "-criterion REGRESSIONTESTS"
     ]
-  }
+  },
+  "project": "relational",
+  "ignore": false,
+  "targets": [
+    {
+      "class": "br.ufal.ic.masg.operations.GreaterThan",
+      "statement": "var1 > var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 0
+    },
+    {
+      "class": "br.ufal.ic.masg.operations.Equal",
+      "statement": "var1 == var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 1
+    },
+    {
+      "class": "br.ufal.ic.masg.operations.LessThan",
+      "statement": "var1 < var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 2
+    },
+    {
+      "class": "br.ufal.ic.masg.operations.GreaterOrEqualThan",
+      "statement": "var1 >= var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 3
+    },
+    {
+      "class": "br.ufal.ic.masg.operations.LessOrEqualThan",
+      "statement": "var1 <= var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 4
+    },
+    {
+      "class": "br.ufal.ic.masg.operations.NotEqual",
+      "statement": "var1 != var2",
+      "line": 9,
+      "type_method": "boolean_function(int,int)",
+      "method": "function(int,int)",
+      "ignore": false,
+      "id": 5
+    }
+  ],
+  "clean": false
 }

@@ -22,7 +22,8 @@ setup(
     install_requires=[
         'argparse==1.4.0',
         'beautifulsoup4==4.6.0',
-        'graphviz==0.8.3'
+        'graphviz==0.8.3',
+        'javalang==0.11.0'
     ],
     test_suite='nose.collector',
     tests_require=[

@@ -64,7 +64,6 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                 print('\t\tcoverage: {0}/{4} ({1}) tests fail: {2}/{3}'.format(
                     coverage, ', '.join(coverage_log), fail_tests_total,
                     tests_total, coverage_threshold))
-                # print('\t\tfail: {0}'.format(fail_tests))
 
                 if coverage >= coverage_threshold and not fail:
                     print('\t\t >>> THIS MUTANT MAY BE EQUIVALENT!')

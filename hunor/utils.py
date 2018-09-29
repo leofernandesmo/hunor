@@ -8,8 +8,8 @@ def get_class_files(path, package='', ext='.class'):
     for node in os.listdir(path):
         node_path = os.path.join(path, node)
         if os.path.isdir(node_path):
-            package = os.path.join(package, node)
-            files += get_class_files(node_path, package, ext)
+            files += get_class_files(node_path, os.path.join(package, node),
+                                     ext)
         elif os.path.splitext(node_path)[1] == ext:
             files.append(os.path.join(package, node))
 
@@ -18,6 +18,10 @@ def get_class_files(path, package='', ext='.class'):
 
 def generate_classpath(paths):
     return os.pathsep.join(paths)
+
+
+def qualified_class_to_file(qualified_class, ext='.java'):
+    return qualified_class.replace('.', os.sep) + ext
 
 
 def config(path):

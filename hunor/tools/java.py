@@ -9,6 +9,7 @@ class JDK:
         self.java = None
         self.javac = None
         self.check_javac()
+        self.tools = os.path.join(java_home, 'lib', 'tools.jar')
 
     def check_javac(self):
         if not self.java_home:

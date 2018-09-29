@@ -30,7 +30,8 @@ def subsuming(mutants):
 
 
 def _clean_dmsg(mutants):
-    r = sorted(mutants.items(), key=lambda v: len(v[1]['subsumes']), reverse=True)
+    r = sorted(mutants.items(), key=lambda v: len(v[1]['subsumes']),
+               reverse=True)
     mutants = {}
     for m in r:
         mutants[m[0]] = dict(m[1])
@@ -77,11 +78,6 @@ def create_dmsg(mutants, export_dir=''):
     try:
         dot.format = 'svg'
         dot.render(os.path.join(export_dir, 'DMSG'))
-    except ExecutableNotFound:
-        print("[WARNING]: Graphviz not found. "
-              "Install graphviz package for generate DMSG.")
-
-    try:
         dot.format = 'png'
         dot.render(os.path.join(export_dir, 'DMSG'))
     except ExecutableNotFound:
