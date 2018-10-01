@@ -19,6 +19,7 @@ class Hunor:
         classpath = Maven(
             jdk=jdk,
             maven_home=self.options.maven_home,
+            no_compile=self.options.no_compile
         ).compile_project(self.options.source)
 
         test_suites = generate_test_suites(

@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 
 from argparse import ArgumentParser
 
@@ -19,7 +20,8 @@ class Options:
                  mutation_tool, source=None, output=DEFAULT['output'],
                  is_evosuite_disabled=False, is_randoop_disabled=False,
                  maven_timeout=DEFAULT['maven_timeout'],
-                 coverage_threshold=DEFAULT['coverage_threshold']):
+                 coverage_threshold=DEFAULT['coverage_threshold'],
+                 no_compile=False):
 
         if maven_home:
             self.maven_home = os.path.abspath(maven_home)
@@ -41,6 +43,24 @@ class Options:
         self.coverage_threshold = coverage_threshold
         self.sut_class = sut_class
         self.mutation_tool = mutation_tool
+        self.no_compile = no_compile
+
+    def __str__(self):
+        return json.dumps({
+                'maven_home': self.maven_home,
+                'java_home': self.java_home,
+                'maven_timeout': self.maven_timeout,
+                'is_randoop_disabled': self.is_randoop_disabled,
+                'is_evosuite_disabled': self.is_evosuite_disabled,
+                'config_file': self.config_file,
+                'source': self.source,
+                'output': self.output,
+                'mutants': self.mutants,
+                'coverage_threshold': self.coverage_threshold,
+                'sut_class': self.sut_class,
+                'mutation_tool': self.mutation_tool,
+                'no_compile': self.no_compile
+        }, indent=2)
 
 
 def _set_source_dir(source, config_file):
@@ -76,7 +96,8 @@ def to_options(parser):
         mutation_tool=o.mutation_tool,
         output=o.output,
         maven_timeout=o.maven_timeout,
-        coverage_threshold=o.coverage_threshold
+        coverage_threshold=o.coverage_threshold,
+        no_compile=o.no_compile
     )
 
 
@@ -138,5 +159,9 @@ def arg_parser():
                         dest='mutation_tool',
                         choices=['major', 'mujava', 'pit'],
                         required=True)
+
+    parser.add_argument('--no-compile',
+                        action='store_true',
+                        dest='no_compile')
 
     return parser

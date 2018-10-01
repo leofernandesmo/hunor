@@ -1,1 +1,4 @@
 commons-math/
+.tmp
+[0-9]*/
+**/mutants/**/config.json

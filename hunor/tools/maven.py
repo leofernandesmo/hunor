@@ -4,10 +4,11 @@ import subprocess
 
 class Maven:
 
-    def __init__(self, maven_home, jdk):
+    def __init__(self, maven_home, jdk, no_compile=False):
         self.maven_home = maven_home
         self.jdk = jdk
         self._check_maven()
+        self.no_compile = no_compile
 
     def _check_maven(self):
         if not self.maven_home:
@@ -43,8 +44,9 @@ class Maven:
     def compile(self, project_dir, timeout=(60 * 60)):
         try:
             project_dir = os.path.abspath(project_dir)
-            self._run(project_dir, 'compile', timeout)
-            print('SUCCESS: {0} compiled!'.format(project_dir))
+            if not self.no_compile:
+                self._run(project_dir, 'compile', timeout)
+                print('SUCCESS: {0} compiled!'.format(project_dir))
 
             if os.path.exists(os.path.join(project_dir, 'target')):
                 return os.path.join(project_dir, 'target', 'classes')

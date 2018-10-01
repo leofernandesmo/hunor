@@ -30,7 +30,7 @@ def main():
     for file in files:
         targets += get_targets(source_dir, file, len(targets))
 
-    write_config_json(targets, 'relational', '.')
+    write_config_json(targets)
 
 
 def get_targets(source_dir, file, count=0):
@@ -91,8 +91,15 @@ def get_targets(source_dir, file, count=0):
 
                     if (node.operator in RELATIONAL_OPERATORS and
                             operandl is not None and operandr is not None):
+
+                        context = [str(p) for p in path
+                                   if not isinstance(p, list)] + [str(node)]
+
+                        context_full = _path_to_context_full(path)
+
                         statement = '{0} {1} {2}'.format(
                             operandl, node.operator, operandr)
+
                         targets.append({
                             'id': count,
                             'ignore': False,
@@ -101,45 +108,30 @@ def get_targets(source_dir, file, count=0):
                             'type_method': '{0}_{1}'.format(
                                 method_type, method_prototype),
                             'line': node.operandl.position[0],
-                            'statement': statement
+                            'statement': statement,
+                            'context': context,
+                            'context_full': context_full
                         })
                         count += 1
     return targets
 
 
-def write_config_json(targets, project, source_dir, output_dir=''):
+def write_config_json(targets, output_dir=''):
     with open(os.path.join(output_dir, 'config.json'), 'w') as f:
-        config = {
-            'project': project,
-            'source': source_dir.split(os.sep),
-            'randoop': {
-                'parameters': [
-                    '--output-limit=10000',
-                    '--maxsize=4',
-                    '--testsperfile=10000',
-                    '--only-test-public-members=true',
-                    '--time-limit=60',
-                    '--flaky-test-behavior=DISCARD',
-                    '--usethreads=true',
-                    '--call_timeout=1000'
-                ]
-            },
-            'evosuite': {
-                'parameters': [
-                    '-Dsearch_budget=60',
-                    '-Dmax_length_test_case=2500',
-                    '-Dmax_size=100',
-                    '-Dminimize=false',
-                    '-criterion REGRESSIONTESTS'
-                ]
-            },
-            'ignore': False,
-            'clean': False,
-            'targets': targets
-        }
+        config = {'targets': targets}
 
         f.write(json.dumps(config, indent=2))
         f.close()
+
+
+def _path_to_context_full(path):
+    ast = []
+
+    for p in path:
+        ast.append({id(p): str(p)} if not isinstance(p, list)
+                   else _path_to_context_full(p))
+
+    return ast
 
 
 if __name__ == '__main__':

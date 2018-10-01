@@ -120,6 +120,9 @@ class Mutant:
         self.label = label
         brother.label = label
 
+    def statement(self):
+        return self.transformation.split(' => ')[0].strip()
+
 
 def _create_label(brothers):
     return ', '.join(sorted(list(brothers)))

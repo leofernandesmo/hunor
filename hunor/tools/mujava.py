@@ -23,10 +23,11 @@ class MuJava:
         self.jdk = jdk
         self.classpath = classpath
 
-    def read_log(self):
+    def read_log(self, log_dir=None):
         mutants_data = {}
 
-        log_file = os.sep.join([self.mutants_dir, 'mutation_log'])
+        log_file = os.sep.join([self.mutants_dir if not log_dir else log_dir,
+                                'mutation_log'])
 
         with open(log_file) as log:
             for line in log.readlines():
@@ -63,8 +64,7 @@ class MuJava:
         try:
             env = os.environ.copy()
             env['CLASSPATH'] = classpath
-            print(classpath)
-            return subprocess.call(command, shell=False,
+            return subprocess.check_output(command, shell=False,
                                            cwd=cwd,
                                            env=env,
                                            timeout=36000)
@@ -101,12 +101,43 @@ class MuJava:
 
         return session, generate_dir, result_dir
 
-    def generate(self, classes_dir, source_dir, java_file):
+    def generate(self, classes_dir, source_dir, java_file, count=0):
         session, generate_dir, result_dir = self._exec_testnew(
             'session', classes_dir, source_dir, java_file)
         self._exec_genmutes(session, ['all'], cwd=generate_dir)
 
-        targets = get_targets(os.path.join(result_dir, os.listdir(
-            result_dir)[0], 'original'), java_file.split(os.sep)[-1])
+        targets = []
 
-        write_config_json(targets, 'relational', '.', generate_dir)
+        if len(os.listdir(result_dir)) > 0:
+            class_dir = os.path.join(result_dir, os.listdir(result_dir)[0])
+            targets = get_targets(os.path.join(class_dir, 'original'),
+                                  java_file.split(os.sep)[-1], count=count)
+
+            self._copy_result(class_dir, targets, java_file)
+
+        return targets
+
+    def _copy_result(self, class_dir, targets, java_file):
+        trad_mutants = os.path.join(class_dir, 'traditional_mutants')
+        mutants = self.read_log(trad_mutants)
+
+        for target in targets:
+            mutant_target = os.path.join(self.mutants_dir,
+                                         str(target['id']))
+            if os.path.exists(mutant_target):
+                shutil.rmtree(mutant_target)
+            os.makedirs(mutant_target)
+            with open(os.path.join(mutant_target, 'mutation_log'), 'w') as f:
+                for mutant in mutants:
+                    m = mutants[mutant]
+                    pck = os.sep.join(java_file.split(os.sep)[0:-1])
+                    src = os.path.join(trad_mutants, m.method, m.id)
+                    dst = os.path.join(mutant_target, m.id, pck)
+                    if (target['line'] == m.line_number
+                            and target['statement'] == m.statement()
+                            and os.path.exists(src)):
+                        f.write('{0}:{1}:{2}:{3}'.format(
+                            m.id, m.line_number, m.method, m.transformation
+                        ))
+                        shutil.copytree(src, dst)
+                f.close()
