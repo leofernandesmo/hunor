@@ -117,7 +117,7 @@ def get_targets(source_dir, file, count=0):
 
 
 def write_config_json(targets, output_dir=''):
-    with open(os.path.join(output_dir, 'config.json'), 'w') as f:
+    with open(os.path.join(output_dir, 'targets.json'), 'w') as f:
         config = {'targets': targets}
 
         f.write(json.dumps(config, indent=2))

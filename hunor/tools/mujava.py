@@ -2,6 +2,8 @@ import os
 import re
 import subprocess
 import shutil
+import json
+import copy
 
 from hunor.mutation.mutant import Mutant
 from hunor.utils import generate_classpath
@@ -110,34 +112,49 @@ class MuJava:
 
         if len(os.listdir(result_dir)) > 0:
             class_dir = os.path.join(result_dir, os.listdir(result_dir)[0])
-            targets = get_targets(os.path.join(class_dir, 'original'),
-                                  java_file.split(os.sep)[-1], count=count)
-
-            self._copy_result(class_dir, targets, java_file)
+            targets = self._copy_result(
+                class_dir,
+                get_targets(os.path.join(class_dir, 'original'),
+                            java_file.split(os.sep)[-1]),
+                java_file,
+                len(targets) + count
+            )
 
         return targets
 
-    def _copy_result(self, class_dir, targets, java_file):
+    def _copy_result(self, class_dir, targets, java_file, count=0):
         trad_mutants = os.path.join(class_dir, 'traditional_mutants')
         mutants = self.read_log(trad_mutants)
+        useful_targets = []
 
         for target in targets:
-            mutant_target = os.path.join(self.mutants_dir,
-                                         str(target['id']))
-            if os.path.exists(mutant_target):
-                shutil.rmtree(mutant_target)
-            os.makedirs(mutant_target)
-            with open(os.path.join(mutant_target, 'mutation_log'), 'w') as f:
-                for mutant in mutants:
-                    m = mutants[mutant]
+            mutant_target = os.path.join(self.mutants_dir, str(count))
+            for mutant in mutants:
+                m = mutants[mutant]
+                src = os.path.join(trad_mutants, m.method, m.id)
+                if (target['line'] == m.line_number
+                        and target['statement'] == m.statement()
+                        and os.path.exists(src)):
                     pck = os.sep.join(java_file.split(os.sep)[0:-1])
-                    src = os.path.join(trad_mutants, m.method, m.id)
                     dst = os.path.join(mutant_target, m.id, pck)
-                    if (target['line'] == m.line_number
-                            and target['statement'] == m.statement()
-                            and os.path.exists(src)):
+
+                    if not os.path.exists(mutant_target):
+                        os.makedirs(mutant_target)
+
+                    with open(os.path.join(mutant_target, 'mutation_log'), 'a') as f:
                         f.write('{0}:{1}:{2}:{3}'.format(
                             m.id, m.line_number, m.method, m.transformation
                         ))
                         shutil.copytree(src, dst)
-                f.close()
+                        f.close()
+
+            if os.path.exists(mutant_target):
+                useful_target = copy.copy(target)
+                useful_target['id'] = count
+                useful_targets.append(useful_target)
+                count += 1
+                with open(os.path.join(mutant_target, 'target.json'), 'w') as t:
+                    t.write(json.dumps(target, indent=2))
+                    t.close()
+
+        return useful_targets
