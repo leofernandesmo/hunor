@@ -10,6 +10,8 @@ class JDK:
         self.javac = None
         self.check_javac()
         self.tools = os.path.join(java_home, 'lib', 'tools.jar')
+        self.jre_home = os.path.join(java_home, 'jre')
+        self.rt = os.path.join(self.jre_home, 'lib', 'rt.jar')
 
     def check_javac(self):
         if not self.java_home:

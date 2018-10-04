@@ -8,7 +8,7 @@ import copy
 from hunor.mutation.mutant import Mutant
 from hunor.utils import generate_classpath
 from hunor.tools import junit
-from hunor.targets.main import get_targets, write_config_json
+from hunor.targets.main import get_targets
 
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -71,7 +71,7 @@ class MuJava:
                                            env=env,
                                            timeout=36000)
         except subprocess.TimeoutExpired:
-            print('# ERROR: generate mutants with muJava timed out.')
+            print('# ERROR: muJava timed out.')
         except subprocess.CalledProcessError as e:
             print('# ERROR: {0} returned non-zero exit status.\n{1}'.format(
                 'muJava', e.output.decode('unicode_escape')))
