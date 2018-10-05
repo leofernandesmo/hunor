@@ -145,16 +145,17 @@ class MuJava:
                         f.write('{0}:{1}:{2}:{3}'.format(
                             m.id, m.line_number, m.method, m.transformation
                         ))
-                        shutil.copytree(src, dst)
+                        if not os.path.exists(dst):
+                            shutil.copytree(src, dst)
                         f.close()
 
             if os.path.exists(mutant_target):
-                useful_target = copy.copy(target)
+                useful_target = dict(target)
                 useful_target['id'] = count
                 useful_targets.append(useful_target)
                 count += 1
                 with open(os.path.join(mutant_target, 'target.json'), 'w') as t:
-                    t.write(json.dumps(target, indent=2))
+                    t.write(json.dumps(useful_target, indent=2))
                     t.close()
 
         return useful_targets

@@ -1,8 +1,8 @@
 import os
 import copy
+import shutil
 
 from hunor.tools.mujava import MuJava
-from hunor.tools.major import Major
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
 from hunor.utils import get_class_files
@@ -21,8 +21,12 @@ def main():
         maven_home=options.maven_home,
     ).compile_project(options.source)
 
+    if os.path.exists(options.mutants):
+        shutil.rmtree(options.mutants)
+    os.makedirs(options.mutants)
+
     tool = MuJava(options.mutants, jdk=jdk, classpath=classes_dir)
-    tool = Major(options.mutants, jdk=jdk, classpath=classes_dir)
+    # tool = Major(options.mutants, jdk=jdk, classpath=classes_dir)
     source_dir = os.path.join(options.source, 'src', 'main', 'java')
 
     files = get_class_files(source_dir, ext='.java')
