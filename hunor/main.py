@@ -29,7 +29,8 @@ class Hunor:
             sut_class=self.options.sut_class,
             output=self.options.output,
             is_randoop_disabled=self.options.is_randoop_disabled,
-            is_evosuite_disabled=self.options.is_evosuite_disabled
+            is_evosuite_disabled=self.options.is_evosuite_disabled,
+            project_dir=self.options.source
         )
 
         junit = JUnit(

@@ -16,7 +16,8 @@ TOOL = 'randoop'
 
 class Randoop:
 
-    def __init__(self, jdk, classpath, config, tests_dir, sut_class):
+    def __init__(self, jdk, classpath, config, tests_dir, sut_class,
+                 project_dir=None):
         self.jdk = jdk
         self.tool_tests_dir = os.path.join(tests_dir, TOOL)
         self.tests_dir = tests_dir
@@ -25,6 +26,7 @@ class Randoop:
         self.tests_src = os.path.join(self.tool_tests_dir, 'tests')
         self.tests_classes = os.path.join(self.tool_tests_dir, 'classes')
         self.parameters = []
+        self.project_dir = project_dir
 
         with open(config, 'r') as c:
             self.parameters = json.loads(c.read())[TOOL]['parameters']
@@ -36,7 +38,8 @@ class Randoop:
             '-classpath', self.classpath + ':' + RANDOOP,
             'randoop.main.Main',
             'gentests',
-            "--testclass=" + self.sut_class
+            "--testclass=" + self.sut_class,
+            '--junit-output-dir=' + self.tests_src
         ]
 
         command += self.parameters
@@ -46,8 +49,8 @@ class Randoop:
             env['PATH'] = (os.path.join(self.jdk.java_home, 'bin') +
                            os.pathsep + env['PATH'])
             return subprocess.check_output(command, shell=False,
-                                           cwd=self.tests_src,
                                            env=env,
+                                           cwd=self.project_dir,
                                            timeout=36000)
         except subprocess.TimeoutExpired:
             print('# ERROR: {0} generate timed out.'.format(TOOL))

@@ -27,13 +27,15 @@ class TestSuiteResult:
 
 
 def generate_test_suites(jdk, classpath, config_file, sut_class, output,
-                         is_randoop_disabled, is_evosuite_disabled):
+                         is_randoop_disabled, is_evosuite_disabled,
+                         project_dir):
 
     tests_dir = os.path.join(output, 'tests')
     test_suites = {}
 
     if not is_randoop_disabled:
-        randoop = Randoop(jdk, classpath, config_file, tests_dir, sut_class)
+        randoop = Randoop(jdk, classpath, config_file, tests_dir, sut_class,
+                          project_dir)
         source_dir, classes_dir, classes = randoop.generate()
 
         test_suites['randoop'] = TestSuiteResult(

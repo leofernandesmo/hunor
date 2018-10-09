@@ -33,18 +33,17 @@ def main():
     targets = []
 
     for file in files:
-        targets += tool.generate(classes_dir, source_dir, file, len(targets))
+        t = tool.generate(classes_dir, source_dir, file, len(targets))
+        targets += t
+        for target in t:
+            o = copy.copy(options)
+            o.mutants = os.path.join(o.mutants, str(target['id']))
+            o.output = o.mutants
+            o.sut_class = target['class']
+            o.no_compile = True
+            Hunor(o).run()
 
     write_config_json(targets, options.mutants)
-
-    for target in targets:
-        o = copy.copy(options)
-        o.mutants = os.path.join(o.mutants, str(target['id']))
-        o.output = o.mutants
-        o.sut_class = target['class']
-        o.no_compile = True
-
-        Hunor(o).run()
 
 
 if __name__ == '__main__':

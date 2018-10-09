@@ -15,7 +15,8 @@ TOOL = 'evosuite'
 
 class Evosuite:
 
-    def __init__(self, jdk, classpath, config_file, tests_dir, sut_class):
+    def __init__(self, jdk, classpath, config_file, tests_dir, sut_class,
+                 project_dir=None):
         self.jdk = jdk
         self.tool_tests_dir = os.path.join(tests_dir, TOOL)
         self.tests_dir = tests_dir
@@ -24,6 +25,7 @@ class Evosuite:
         self.tests_src = os.path.join(self.tool_tests_dir, 'evosuite-tests')
         self.tests_classes = os.path.join(self.tool_tests_dir, 'classes')
         self.parameters = config(config_file)[TOOL]['parameters']
+        self.project_dir = project_dir
 
     def _exec_tool(self):
         print("TEST SUITE: generating with {0}.".format(TOOL))
@@ -31,7 +33,8 @@ class Evosuite:
             self.jdk.java,
             '-jar', EVOSUITE,
             '-projectCP', self.classpath,
-            '-class', self.sut_class
+            '-class', self.sut_class,
+            '-DOUTPUT_DIR=' + self.tool_tests_dir
         ]
         command += self.parameters
 

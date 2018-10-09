@@ -38,8 +38,8 @@ class Maven:
         env = os.environ.copy()
         env['JAVA_HOME'] = self.jdk.java_home
 
-        subprocess.call(command, cwd=project_dir, env=env, timeout=timeout,
-                        stdout=subprocess.DEVNULL)
+        subprocess.check_output(command, cwd=project_dir, env=env,
+                                timeout=timeout)
 
     def compile(self, project_dir, timeout=(60 * 60)):
         try:
