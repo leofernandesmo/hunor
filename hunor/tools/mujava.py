@@ -124,6 +124,7 @@ class MuJava:
 
     def _copy_result(self, class_dir, targets, java_file, count=0):
         trad_mutants = os.path.join(class_dir, 'traditional_mutants')
+        original = os.path.join(class_dir, 'original')
         mutants = self.read_log(trad_mutants)
         useful_targets = []
 
@@ -137,6 +138,7 @@ class MuJava:
                         and os.path.exists(src)):
                     pck = os.sep.join(java_file.split(os.sep)[0:-1])
                     dst = os.path.join(mutant_target, m.id, pck)
+                    ori_dst = os.path.join(mutant_target, 'ORIGINAL', pck)
 
                     if not os.path.exists(mutant_target):
                         os.makedirs(mutant_target)
@@ -147,6 +149,9 @@ class MuJava:
                         ))
                         if not os.path.exists(dst):
                             shutil.copytree(src, dst)
+
+                        if not os.path.exists(ori_dst):
+                            shutil.copytree(original, ori_dst)
                         f.close()
 
             if os.path.exists(mutant_target):

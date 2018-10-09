@@ -2,6 +2,7 @@ import os
 import re
 import copy
 import subprocess
+import shutil
 
 from bs4 import BeautifulSoup
 
@@ -62,7 +63,8 @@ class JUnit:
         except subprocess.TimeoutExpired:
             print("# ERROR: Run JUnit tests timed out.")
 
-    def _run_test_suite(self, test_suite, mutant_classpath, mutation_line=0):
+    def _run_test_suite(self, test_suite, mutant_classpath, mutation_line=0,
+                        original_path=None):
         total = 0
         fail = 0
         fail_tests = set()
@@ -76,17 +78,32 @@ class JUnit:
             total += t
             fail += f
             fail_tests = fail_tests.union(f_s)
-            coverage += self._count_line_coverage(test_suite.source_dir,
-                                                  mutation_line)
+            coverage_src = test_suite.source_dir
+
+            if original_path is not None:
+                coverage_src = os.path.join(original_path, test_suite.id)
+
+            coverage += self._count_line_coverage(coverage_src, mutation_line)
+            coverage_report_dir = os.path.join(test_suite.source_dir,
+                                               'coverage-report')
+            coverage_report_dst_dir = os.path.join(
+                    mutant_classpath, test_suite.id, 'coverage-report')
+
+            if os.path.exists(coverage_report_dst_dir):
+                shutil.rmtree(coverage_report_dst_dir)
+
+            if os.path.exists(coverage_report_dir):
+                shutil.copytree(coverage_report_dir, coverage_report_dst_dir)
 
         return total, fail, fail_tests, coverage
 
-    def run_test_suites(self, test_suites, mutant_classpath, mutation_line):
+    def run_test_suites(self, test_suites, mutant_classpath, mutation_line,
+                        original_path=None):
         test_suites = copy.deepcopy(test_suites)
         for t in test_suites:
             test_suite = test_suites[t]
             total, fail, fail_tests, coverage = self._run_test_suite(
-                test_suite, mutant_classpath, mutation_line)
+                test_suite, mutant_classpath, mutation_line, original_path)
 
             test_suite.fail = (fail != 0)
             test_suite.coverage = coverage

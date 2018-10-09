@@ -49,7 +49,8 @@ class Hunor:
             mutation_tool=self.options.mutation_tool,
             sut_class=self.options.sut_class,
             coverage_threshold=self.options.coverage_threshold,
-            output=self.options.output
+            output=self.options.output,
+            mutants_dir=self.options.mutants
         )
 
         mutants = subsuming(mutants)
