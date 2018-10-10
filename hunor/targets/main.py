@@ -3,6 +3,7 @@ import json
 
 import javalang
 import javalang.tree as tree
+from javalang.parser import JavaSyntaxError
 
 from hunor.utils import get_class_files
 
@@ -37,8 +38,12 @@ def get_targets(source_dir, file, count=0):
     targets = []
 
     with open(os.path.join(source_dir, file), 'r') as f:
-        ast = javalang.parse.parse(f.read())
-        f.close()
+        try:
+            ast = javalang.parse.parse(f.read())
+        except JavaSyntaxError:
+            return targets
+        finally:
+            f.close()
 
     for _, clazz in ast.filter(tree.ClassDeclaration):
         class_name = '.'.join([ast.package.name, clazz.name])
@@ -126,13 +131,13 @@ def write_config_json(targets, output_dir=''):
 
 def _path_to_context_full(path):
     ast = []
-
     for p in path:
         ast.append({id(p): str(p)} if not isinstance(p, list)
                    else _path_to_context_full(p))
-
     return ast
 
 
 if __name__ == '__main__':
     main()
+
+

@@ -1,4 +1,5 @@
 import os
+import copy
 
 from hunor.tools.randoop import Randoop
 from hunor.tools.evosuite import Evosuite
@@ -24,6 +25,11 @@ class TestSuiteResult:
             'fail_tests_total': self.fail_tests_total,
             'fail_tests': list(self.fail_tests)
         }
+
+    def copy_without_excluded(self, excluded):
+        result = copy.deepcopy(self)
+        result.fail_tests = result.fail_tests.difference(excluded)
+        return result
 
 
 def generate_test_suites(jdk, classpath, config_file, sut_class, output,

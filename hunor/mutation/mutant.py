@@ -1,3 +1,5 @@
+from hunor.utils import list_equal
+
 class Result:
 
     def __init__(self):
@@ -31,6 +33,9 @@ class Mutant:
     def __eq__(self, other):
         return self.id == other.id
 
+    def __hash__(self):
+        return hash(self.id)
+
     def get_fail_tests(self):
         fail_tests = set()
 
@@ -40,27 +45,44 @@ class Mutant:
 
         return fail_tests
 
-    def is_brother(self, mutant):
+    def is_brother(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
         fail_tests_b = mutant.get_fail_tests()
+
+        if ignore_tests is not None:
+            fail_tests_a = fail_tests_a.difference(ignore_tests)
+            fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
                 and (fail_tests_a.issubset(fail_tests_b)
                      and fail_tests_b.issubset(fail_tests_a)))
 
-    def subsume(self, mutant):
+    def subsume(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
         fail_tests_b = mutant.get_fail_tests()
+
+        if ignore_tests is not None:
+            fail_tests_a = fail_tests_a.difference(ignore_tests)
+            fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
                 and fail_tests_b.issubset(fail_tests_a))
 
-    def is_subsumed_by(self, mutant):
+    def is_subsumed_by(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
         fail_tests_b = mutant.get_fail_tests()
 
+        if ignore_tests is not None:
+            fail_tests_a = fail_tests_a.difference(ignore_tests)
+            fail_tests_b = fail_tests_b.difference(ignore_tests)
+
         return (not self.is_invalid and not self.maybe_equivalent
                 and fail_tests_a.issubset(fail_tests_b))
+
+    def subsuming_equal(self, mutant):
+        return (list_equal(self.brothers, mutant.brothers)
+                and list_equal(self.subsumes, mutant.subsumes)
+                and list_equal(self.subsumed_by, mutant.subsumed_by))
 
     def to_dict(self):
 

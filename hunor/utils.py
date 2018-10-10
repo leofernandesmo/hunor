@@ -27,3 +27,24 @@ def qualified_class_to_file(qualified_class, ext='.java'):
 def config(path):
     with open(path, 'r') as c:
         return json.loads(c.read())
+
+
+def write_json(obj, name, output_dir=''):
+    with open(os.path.join(output_dir, name + '.json'), 'w') as f:
+        f.write(json.dumps(obj, indent=2))
+        f.close()
+
+
+def list_to_set(l):
+    s = set()
+    for e in l:
+        s.add(e)
+    return s
+
+
+def list_equal(a, b):
+    return set_equal(list_to_set(a), list_to_set(b))
+
+
+def set_equal(a, b):
+    return a.issubset(b) and b.issubset(a)

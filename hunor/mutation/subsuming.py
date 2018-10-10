@@ -1,32 +1,36 @@
 import os
+import copy
 
 from itertools import combinations
 from graphviz import Digraph, ExecutableNotFound
 
 
-def subsuming(mutants):
+def subsuming(mutants, ignored_tests=None, clean=True):
+    mutants = copy.deepcopy(mutants)
     mutants = _remove_invalid_and_equivalent(mutants)
 
     for a, b in combinations(mutants, 2):
-        if mutants[a].is_brother(mutants[b]):
+        if mutants[a].is_brother(mutants[b], ignored_tests):
             mutants[b].set_as_brother(mutants[a])
             mutants[a].set_as_brother(mutants[b])
 
     for a, b in combinations(mutants, 2):
-        if mutants[a].subsume(mutants[b]):
+        if mutants[a].subsume(mutants[b], ignored_tests):
             mutants[a].subsumes.append(mutants[b])
             mutants[b].subsumed_by.append(mutants[a])
 
-        if mutants[a].is_subsumed_by(mutants[b]):
+        if mutants[a].is_subsumed_by(mutants[b], ignored_tests):
             mutants[a].subsumed_by.append(mutants[b])
             mutants[b].subsumes.append(mutants[a])
 
-    d_mutants = {}
-    for key in mutants:
-        if mutants[key].label not in d_mutants:
-            d_mutants[mutants[key].label] = mutants[key].to_dict()
+    if clean:
+        d_mutants = {}
+        for key in mutants:
+            if mutants[key].label not in d_mutants:
+                d_mutants[mutants[key].label] = mutants[key].to_dict()
 
-    return _clean_dmsg(d_mutants)
+        return _clean_dmsg(d_mutants)
+    return mutants
 
 
 def _clean_dmsg(mutants):
@@ -85,3 +89,40 @@ def create_dmsg(mutants, export_dir=''):
               "Install graphviz package for generate DMSG.")
 
     return dot
+
+
+def minimize(mutants):
+    mutants = copy.deepcopy(mutants)
+    all_tests = set()
+
+    for m in mutants:
+        for t in mutants[m].get_fail_tests():
+            all_tests.add(t)
+
+    original = subsuming(mutants, clean=False)
+    excluded_tests = set()
+    for t in all_tests:
+        excluded_tests.add(t)
+        if not _subsuming_equals(
+                original,
+                subsuming(mutants, clean=False, ignored_tests=excluded_tests)):
+            excluded_tests.remove(t)
+
+    for key in mutants:
+        for test_suite in mutants[key].result.test_suites:
+            mutants[key].result.test_suites[test_suite] = (
+                mutants[key].result.test_suites[test_suite]
+                .copy_without_excluded(excluded_tests))
+
+    return subsuming(mutants), all_tests.difference(excluded_tests)
+
+
+def _subsuming_equals(mutants_a, mutants_b):
+    if len(mutants_a.keys()) != len(mutants_b.keys()):
+        return False
+
+    for key in mutants_a:
+        if not mutants_a[key].subsuming_equal(mutants_b[key]):
+            return False
+
+    return True

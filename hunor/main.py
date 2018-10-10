@@ -5,7 +5,8 @@ from hunor.tools.junit import JUnit
 from hunor.args import arg_parser, to_options
 from hunor.tools.testsuite import generate_test_suites
 from hunor.mutation.nimrod import equivalence_analysis
-from hunor.mutation.subsuming import subsuming, create_dmsg
+from hunor.mutation.subsuming import subsuming, create_dmsg, minimize
+from hunor.utils import write_json
 
 
 class Hunor:
@@ -53,10 +54,17 @@ class Hunor:
             mutants_dir=self.options.mutants
         )
 
-        mutants = subsuming(mutants)
-        create_dmsg(mutants=mutants, export_dir=self.options.output)
+        subsuming_mutants = subsuming(mutants)
+        minimized, minimal_tests = minimize(mutants)
+        create_dmsg(mutants=subsuming_mutants, export_dir=self.options.output)
+        mutants_dict = [mutants[m].to_dict() for m in mutants]
 
-        return mutants
+        write_json(minimized, 'subsuming_minimal_tests', self.options.mutants)
+        write_json(list(minimal_tests), 'minimal_tests', self.options.mutants)
+        write_json(mutants_dict, 'mutants', self.options.mutants)
+        write_json(subsuming_mutants, 'subsuming_mutants', self.options.mutants)
+
+        return mutants_dict, subsuming_mutants
 
 
 def main():

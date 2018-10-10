@@ -5,7 +5,7 @@ import shutil
 from hunor.tools.mujava import MuJava
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
-from hunor.utils import get_class_files
+from hunor.utils import get_class_files, write_json
 from hunor.args import arg_parser, to_options
 from hunor.targets.main import write_config_json
 from hunor.main import Hunor
