@@ -3,6 +3,9 @@ import json
 
 import javalang
 import javalang.tree as tree
+
+from javalang.tree import Node
+from javalang.ast import walk_tree
 from javalang.parser import JavaSyntaxError
 
 from hunor.utils import get_class_files
@@ -101,6 +104,7 @@ def get_targets(source_dir, file, count=0):
                                    if not isinstance(p, list)] + [str(node)]
 
                         context_full = _path_to_context_full(path)
+                        method_ast = _method_ast_with_id(method)
 
                         statement = '{0} {1} {2}'.format(
                             operandl, node.operator, operandr)
@@ -115,7 +119,8 @@ def get_targets(source_dir, file, count=0):
                             'line': node.operandl.position[0],
                             'statement': statement,
                             'context': context,
-                            'context_full': context_full
+                            'context_full': context_full,
+                            'method_ast': method_ast
                         })
                         count += 1
     return targets
@@ -141,3 +146,81 @@ if __name__ == '__main__':
     main()
 
 
+def _get_attrs(node):
+    attrs = {}
+    if isinstance(node, Node):
+        names = node.attrs
+        for name in names:
+            attrs[name] = str(node.__getattribute__(name))
+    return attrs
+
+
+def _method_ast_with_id(node):
+    d = []
+
+    for child in node.children[-1]:
+        d.append({
+            'id': id(child),
+            'name': str(child),
+            'attrs': _get_attrs(child),
+            'children': _ast_with_id(child)
+        })
+
+    return d
+
+
+def _method_ast(node):
+    d = []
+
+    for child in node.children[-1]:
+        d.append({
+            'name': str(child),
+            'attrs': _get_attrs(child),
+            'children': _ast(child)
+        })
+
+    return d
+
+
+def _ast_with_id(node):
+    d = []
+
+    if isinstance(node, Node):
+        for child in node.children:
+            if isinstance(child, Node):
+                d.append({
+                    'id': id(child),
+                    'name': str(child),
+                    'attrs': _get_attrs(child),
+                    'children': _ast_with_id(child)
+                })
+            elif isinstance(child, (list, tuple)):
+                for c in child:
+                    d.append({
+                        'id': id(c),
+                        'name': str(c),
+                        'attrs': _get_attrs(c),
+                        'children': _ast_with_id(c)
+                    })
+    return d
+
+
+def _ast(node):
+    d = []
+
+    if isinstance(node, Node):
+        for child in node.children:
+            if isinstance(child, Node):
+                d.append({
+                    'name': str(child),
+                    'attrs': _get_attrs(child),
+                    'children': _ast(child)
+                })
+            elif isinstance(child, (list, tuple)):
+                for c in child:
+                    d.append({
+                        'name': str(c),
+                        'attrs': _get_attrs(c),
+                        'children': _ast(c)
+                })
+    return d

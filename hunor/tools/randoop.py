@@ -51,7 +51,7 @@ class Randoop:
             return subprocess.check_output(command, shell=False,
                                            env=env,
                                            cwd=self.project_dir,
-                                           timeout=36000)
+                                           timeout=5 * 60)
         except subprocess.TimeoutExpired:
             print('# ERROR: {0} generate timed out.'.format(TOOL))
         except subprocess.CalledProcessError as e:
@@ -67,7 +67,7 @@ class Randoop:
         for java_test_file in sorted(get_class_files(
                 self.tests_src, ext='.java')):
             self.jdk.run_javac(os.path.join(self.tests_src, java_test_file),
-                               36000, self.tests_src, '-classpath', classpath,
+                               5 * 60, self.tests_src, '-classpath', classpath,
                                '-d', self.tests_classes)
 
         return self._test_classes()

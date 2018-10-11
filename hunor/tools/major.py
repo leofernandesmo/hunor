@@ -54,7 +54,7 @@ class Major:
         try:
             env = {}
             return subprocess.check_output(command, shell=False, cwd=cwd,
-                                           env=env, timeout=36000)
+                                           env=env, timeout=(5 * 60))
         except subprocess.TimeoutExpired:
             print('# ERROR: Major time out.')
         except subprocess.CalledProcessError as e:
