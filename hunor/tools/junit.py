@@ -144,6 +144,9 @@ def _extract_results_ok(output):
 
 
 def _extract_results(output):
+    if len(re.findall(r'initializationError', output)) > 0:
+        return 0, 0, set()
+
     result = re.findall(r'Tests run: [0-9]*,[ ]{2}Failures: [0-9]*', output)[0]
     result = result.replace(',', ' ')
     r = [int(s) for s in result.split() if s.isdigit()]
