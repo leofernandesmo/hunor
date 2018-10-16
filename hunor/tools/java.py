@@ -39,10 +39,14 @@ class JDK:
             if java_file:
                 command.append(java_file)
 
-            subprocess.call(command, stdout=subprocess.DEVNULL, timeout=timeout,
-                            cwd=cwd)
+            subprocess.check_call(command, stdout=subprocess.DEVNULL,
+                                  timeout=timeout, cwd=cwd,
+                                  stderr=subprocess.DEVNULL)
+            return True
         except subprocess.CalledProcessError:
             print("Cannot compile {0} with arguments {1}".format(
                 java_file, args))
+            return False
         except subprocess.TimeoutExpired:
             print("javac timeout compiling {0}".format(java_file))
+            return False

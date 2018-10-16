@@ -62,6 +62,7 @@ class JUnit:
             return _extract_results(e.output.decode('unicode_escape'))
         except subprocess.TimeoutExpired:
             print("# ERROR: Run JUnit tests timed out.")
+            return 0, 0, set()
 
     def _run_test_suite(self, test_suite, mutant_classpath, mutation_line=0,
                         original_path=None):

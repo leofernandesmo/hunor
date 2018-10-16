@@ -5,9 +5,9 @@ from itertools import combinations
 from graphviz import Digraph, ExecutableNotFound
 
 
-def subsuming(mutants, ignored_tests=None, clean=True):
+def subsuming(mutants, ignored_tests=None, clean=True, coverage_threshold=0):
     mutants = copy.deepcopy(mutants)
-    mutants = _remove_invalid_and_equivalent(mutants)
+    mutants = _remove_invalid_and_equivalent(mutants, coverage_threshold)
 
     for a, b in combinations(mutants, 2):
         if mutants[a].is_brother(mutants[b], ignored_tests):
@@ -58,11 +58,13 @@ def _all_subsumed(mutants, mutant, subsumed):
     return subsumed
 
 
-def _remove_invalid_and_equivalent(mutants):
+def _remove_invalid_and_equivalent(mutants, coverage_threshold):
     r = dict(mutants)
     for key in mutants:
         if (mutants[key].maybe_equivalent
-                or mutants[key].is_invalid):
+                or mutants[key].is_invalid
+                or not mutants[key].get_fail_tests()
+                or mutants[key].get_coverage_count() < coverage_threshold):
             del r[key]
     return r
 
@@ -91,7 +93,7 @@ def create_dmsg(mutants, export_dir=''):
     return dot
 
 
-def minimize(mutants):
+def minimize(mutants, coverage_threshold=0):
     mutants = copy.deepcopy(mutants)
     all_tests = set()
 
@@ -99,13 +101,15 @@ def minimize(mutants):
         for t in mutants[m].get_fail_tests():
             all_tests.add(t)
 
-    original = subsuming(mutants, clean=False)
+    original = subsuming(mutants, clean=False,
+                         coverage_threshold=coverage_threshold)
     excluded_tests = set()
     for t in all_tests:
         excluded_tests.add(t)
         if not _subsuming_equals(
                 original,
-                subsuming(mutants, clean=False, ignored_tests=excluded_tests)):
+                subsuming(mutants, clean=False, ignored_tests=excluded_tests,
+                          coverage_threshold=coverage_threshold)):
             excluded_tests.remove(t)
 
     for key in mutants:
@@ -114,7 +118,8 @@ def minimize(mutants):
                 mutants[key].result.test_suites[test_suite]
                 .copy_without_excluded(excluded_tests))
 
-    return subsuming(mutants), all_tests.difference(excluded_tests)
+    return (subsuming(mutants, coverage_threshold=coverage_threshold),
+            all_tests.difference( excluded_tests))
 
 
 def _subsuming_equals(mutants_a, mutants_b):

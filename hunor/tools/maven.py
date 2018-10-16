@@ -38,8 +38,8 @@ class Maven:
         env = os.environ.copy()
         env['JAVA_HOME'] = self.jdk.java_home
 
-        subprocess.check_output(command, cwd=project_dir, env=env,
-                                timeout=timeout)
+        return subprocess.check_output(command, cwd=project_dir, env=env,
+                                       timeout=timeout)
 
     def compile(self, project_dir, timeout=(10 * 60)):
         try:
@@ -64,3 +64,21 @@ class Maven:
 
     def compile_project(self, project_dir):
         return self.compile(project_dir)
+
+    def test(self, project_dir, timeout=(10 * 60)):
+        try:
+            project_dir = os.path.abspath(project_dir)
+            output = self._run(project_dir, 'test', timeout)
+            return _extract_results_ok(output.decode('unicode_escape'))
+        except subprocess.CalledProcessError as e:
+            return _extract_results(e.output.decode('unicode_escape'))
+        except subprocess.TimeoutExpired:
+            print("# ERROR: Run JUnit tests timed out.")
+
+
+def _extract_results_ok(output):
+    print(output)
+
+
+def _extract_results(output):
+    print(output)

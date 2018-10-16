@@ -35,18 +35,19 @@ class MuJava:
             with open(log_file) as log:
                 for line in log.readlines():
                     data = line.split(':')
-                    operator = re.findall(r'[A-Z]*', data[0])[0]
-                    mutants_data[data[0]] = Mutant(
-                        mid=data[0],
-                        operator=operator,
-                        original_symbol=None,
-                        replacement_symbol=None,
-                        method=data[2],
-                        line_number=int(data[1]) if (
-                            not operator == 'SDL') else int(data[1]) - 1,
-                        transformation=data[3],
-                        path=self._mutant_dir(data[0])
-                    )
+                    if len(data) == 4:
+                        operator = re.findall(r'[A-Z]*', data[0])[0]
+                        mutants_data[data[0]] = Mutant(
+                            mid=data[0],
+                            operator=operator,
+                            original_symbol=None,
+                            replacement_symbol=None,
+                            method=data[2],
+                            line_number=int(data[1]) if (
+                                not operator == 'SDL') else int(data[1]) - 1,
+                            transformation=data[3],
+                            path=self._mutant_dir(data[0])
+                        )
                 log.close()
 
         return mutants_data
@@ -67,9 +68,8 @@ class MuJava:
         try:
             env = os.environ.copy()
             env['CLASSPATH'] = classpath
-            return subprocess.check_output(command, shell=False,
-                                           cwd=cwd,
-                                           env=env,
+            return subprocess.check_output(command, shell=False, cwd=cwd,
+                                           stderr=subprocess.DEVNULL, env=env,
                                            timeout=(5 * 60))
         except subprocess.TimeoutExpired:
             print('# ERROR: muJava timed out.')
@@ -131,6 +131,9 @@ class MuJava:
 
         for target in targets:
             mutant_target = os.path.join(self.mutants_dir, str(count))
+            if os.path.exists(mutant_target):
+                shutil.rmtree(mutant_target)
+
             for mutant in mutants:
                 m = mutants[mutant]
                 src = os.path.join(trad_mutants, m.method, m.id)

@@ -45,6 +45,14 @@ class Mutant:
 
         return fail_tests
 
+    def get_coverage_count(self):
+        coverage_count = 0
+
+        for test_suite in self.result.test_suites:
+            coverage_count += self.result.test_suites[test_suite].coverage
+
+        return coverage_count
+
     def is_brother(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
         fail_tests_b = mutant.get_fail_tests()

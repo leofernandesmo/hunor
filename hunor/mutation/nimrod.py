@@ -34,56 +34,62 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
         print("\tmutant: {0}... {1}/{2}".format(mutant, i + 1, len(mutants)))
 
         if os.path.exists(mutant.path):
+            compile_success = True
             for java_file in get_class_files(mutant.path, ext='.java'):
-                jdk.run_javac(
+                compile_success = compile_success and jdk.run_javac(
                     java_file, 60, mutant.path, "-classpath", classpath)
 
-            mutant.result.test_suites = junit.run_test_suites(
-                test_suites, mutant.path, mutant.line_number, original_dir)
+            if compile_success:
+                mutant.result.test_suites = junit.run_test_suites(
+                    test_suites, mutant.path, mutant.line_number, original_dir)
 
-            coverage = 0
-            fail = False
-            coverage_log = []
-            tests_total = 0
-            fail_tests_total = 0
-            fail_tests = set()
+                coverage = 0
+                fail = False
+                coverage_log = []
+                tests_total = 0
+                fail_tests_total = 0
+                fail_tests = set()
 
-            for r in mutant.result.test_suites:
-                coverage += mutant.result.test_suites[r].coverage
-                fail = fail or mutant.result.test_suites[r].fail
-                tests_total += mutant.result.test_suites[r].tests_total
-                fail_tests_total += (mutant.result.test_suites[r]
-                                     .fail_tests_total)
-                fail_tests = fail_tests.union(
-                    mutant.result.test_suites[r].fail_tests)
+                for r in mutant.result.test_suites:
+                    coverage += mutant.result.test_suites[r].coverage
+                    fail = fail or mutant.result.test_suites[r].fail
+                    tests_total += mutant.result.test_suites[r].tests_total
+                    fail_tests_total += (mutant.result.test_suites[r]
+                                         .fail_tests_total)
+                    fail_tests = fail_tests.union(
+                        mutant.result.test_suites[r].fail_tests)
 
-                coverage_log.append('{0}: {1}'.format(
-                    r, mutant.result.test_suites[r].coverage))
+                    coverage_log.append('{0}: {1}'.format(
+                        r, mutant.result.test_suites[r].coverage))
 
-            coverage_threshold = float(coverage_threshold)
-            if coverage_threshold < 1:
-                coverage_threshold = math.ceil(
-                    coverage_threshold * tests_total)
-            else:
-                coverage_threshold = math.ceil(coverage_threshold)
-
-            print('\t\tcoverage: {0}/{4} ({1}) tests fail: {2}/{3}'.format(
-                coverage, ', '.join(coverage_log), fail_tests_total,
-                tests_total, coverage_threshold))
-            with open(os.path.join(output, 'equivalents.csv'), 'a') as f:
-                if coverage >= coverage_threshold and not fail:
-                    print('\t\t +++ THIS MUTANT MAY BE EQUIVALENT!')
-                    mutant.maybe_equivalent = True
-                    f.write('{0},{1},{2},{3}\n'.format(mutant.id, 'x', '',
-                                                       coverage))
-                elif fail:
-                    print('\t\t --- THIS MUTANT IS NOT EQUIVALENT!')
-                    f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', 'x',
-                                                       coverage))
+                coverage_threshold = float(coverage_threshold)
+                if coverage_threshold < 1:
+                    coverage_threshold = math.ceil(
+                        coverage_threshold * tests_total)
                 else:
-                    f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', '',
-                                                       coverage))
-                f.close()
+                    coverage_threshold = math.ceil(coverage_threshold)
+
+                print('\t\tcoverage: {0}/{4} ({1}) tests fail: {2}/{3}'.format(
+                    coverage, ', '.join(coverage_log), fail_tests_total,
+                    tests_total, coverage_threshold))
+                with open(os.path.join(output, 'equivalents.csv'), 'a') as f:
+                    if coverage >= coverage_threshold and not fail:
+                        print('\t\t +++ THIS MUTANT MAY BE EQUIVALENT!')
+                        mutant.maybe_equivalent = True
+                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, 'x', '',
+                                                           coverage))
+                    elif fail:
+                        print('\t\t --- THIS MUTANT IS NOT EQUIVALENT!')
+                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', 'x',
+                                                           coverage))
+                    else:
+                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', '',
+                                                           coverage))
+                    f.close()
+            else:
+                print('\t\tWARNING: mutant not compile: {0}'.format(
+                    mutant.path))
+                mutant.is_invalid = True
         else:
             print('\t\tWARNING: mutant directory not found: {0}'
                   .format(mutant.path))

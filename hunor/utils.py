@@ -35,6 +35,10 @@ def write_json(obj, name, output_dir=''):
         f.close()
 
 
+def read_json(path):
+    return config(path)
+
+
 def list_to_set(l):
     s = set()
     for e in l:

@@ -54,9 +54,23 @@ class Hunor:
             mutants_dir=self.options.mutants
         )
 
-        subsuming_mutants = subsuming(mutants)
-        minimized, minimal_tests = minimize(mutants)
+        subsuming_mutants = subsuming(
+            mutants,
+            coverage_threshold=self.options.coverage_threshold
+        )
+
+        minimized, minimal_tests = minimize(
+            mutants,
+            coverage_threshold=self.options.coverage_threshold
+        )
+
         create_dmsg(mutants=subsuming_mutants, export_dir=self.options.output)
+        mutants = subsuming(
+            mutants,
+            clean=False,
+            coverage_threshold=self.options.coverage_threshold
+        )
+
         mutants_dict = [mutants[m].to_dict() for m in mutants]
 
         write_json(minimized, 'subsuming_minimal_tests', self.options.mutants)
