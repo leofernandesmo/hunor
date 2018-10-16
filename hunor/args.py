@@ -10,7 +10,7 @@ from hunor.utils import config
 DEFAULT = {
     'maven_timeout': 3600,
     'output': 'hunor-output',
-    'coverage_threshold': 1
+    'coverage_threshold': 1.0
 }
 
 
@@ -96,7 +96,7 @@ def to_options(parser):
         mutation_tool=o.mutation_tool,
         output=o.output,
         maven_timeout=o.maven_timeout,
-        coverage_threshold=o.coverage_threshold,
+        coverage_threshold=float(o.coverage_threshold),
         no_compile=o.no_compile
     )
 

@@ -1,4 +1,8 @@
+import re
+
 from hunor.utils import list_equal
+from difflib import ndiff
+
 
 class Result:
 
@@ -125,7 +129,9 @@ class Mutant:
             'path': self.path,
             'is_invalid': self.is_invalid,
             'label': self.label,
-            'test_suites': test_suites
+            'test_suites': test_suites,
+            'diff': self.diff(),
+            'mutation': self.gen_label()
         }
 
     def set_as_brother(self, brother):
@@ -152,6 +158,37 @@ class Mutant:
 
     def statement(self):
         return self.transformation.split(' => ')[0].strip()
+
+    def diff(self):
+        diff = []
+        transformation = self.transformation.split(' => ')
+        original = transformation[0].strip().replace(' ', '')
+        mutation = transformation[1].strip().replace(' ', '')
+        for d in ndiff(original, mutation):
+            if d[0] != ' ':
+                diff.append([d[0], d[-1]])
+        return diff
+
+    def gen_label(self):
+        transformation = self.transformation.split(' => ')
+        original = transformation[1].strip().replace(' ', '')
+        mutation = transformation[1].strip().replace(' ', '')
+        if self.operator == 'COI':
+            return self.operator + ': ' + '!()'
+        else:
+            label = re.sub(r'[a-zA-Z0-9._(),]*', '', mutation)
+            if len(label) == 0:
+                if mutation == 'true':
+                    return self.operator + ': ' + 'true'
+                elif mutation == 'false':
+                    return self.operator + ': ' + 'false'
+                elif original.startswith(mutation):
+                    return self.operator + ': ' + 'lhs'
+                elif original.endswith(mutation):
+                    return self.operator + ': ' + 'rhs'
+                return self.operator + ': ' + mutation
+
+        return self.operator + ': ' + label
 
 
 def _create_label(brothers):

@@ -13,6 +13,11 @@ from hunor.utils import get_class_files
 PROJECT_DIR = os.path.join('../../example/relational/src/main/java')
 
 RELATIONAL_OPERATORS = ['>', '==', '<', '>=', '<=', '!=']
+ARITHMETIC_OPERATORS = ['+', '-', '*', '/', '%']
+LOGICAL_OPERATORS = ['&&', '||']
+BINARY_LOGICAL_OPERATORS = ['|', '^', '&']
+ALL_OPERATORS = (RELATIONAL_OPERATORS + ARITHMETIC_OPERATORS + LOGICAL_OPERATORS
+                 + BINARY_LOGICAL_OPERATORS)
 ALLOWED_PARAM_TYPES = [
     'byte', 'Byte',
     'short', 'Short',
@@ -83,9 +88,17 @@ def get_targets(source_dir, file, count=0):
                                                      node.operandl.member])
                             else:
                                 operandl = node.operandl.member
-                        elif (isinstance(node.operandl, tree.Literal)
-                              and str(node.operandl.value).isnumeric()):
+                        elif isinstance(node.operandl, tree.Literal):
                             operandl = node.operandl.value
+                        elif (isinstance(node.operandl, tree.This)
+                              and len(node.operandl.selectors) == 1
+                              and isinstance(node.operandl.selectors[0],
+                                             tree.MemberReference)):
+                            operandl = '.'.join([
+                                'this',
+                                str(node.operandl.selectors[0].member)])
+                        elif isinstance(node.operandl, tree.MethodInvocation):
+                            operandl = _method_invocation_to_str(node.operandl)
 
                         if isinstance(node.operandr, tree.MemberReference):
                             if node.operandr.qualifier:
@@ -93,16 +106,19 @@ def get_targets(source_dir, file, count=0):
                                                      node.operandr.member])
                             else:
                                 operandr = node.operandr.member
-                        elif (isinstance(node.operandr, tree.Literal)
-                              and str(node.operandr.value).isnumeric()):
+                        elif isinstance(node.operandr, tree.Literal):
                             operandr = node.operandr.value
-                        elif (isinstance(node.operandr, tree.This) and
-                              len(node.operandr.selectors) == 1):
+                        elif (isinstance(node.operandr, tree.This)
+                              and len(node.operandr.selectors) == 1
+                              and isinstance(node.operandr.selectors[0],
+                                             tree.MemberReference)):
                             operandr = '.'.join([
                                 'this',
                                 str(node.operandr.selectors[0].member)])
+                        elif isinstance(node.operandr, tree.MethodInvocation):
+                            operandr = _method_invocation_to_str(node.operandr)
 
-                        if (node.operator in RELATIONAL_OPERATORS and
+                        if (node.operator in ALL_OPERATORS and
                                 operandl is not None and operandr is not None):
 
                             context = [str(p) for p in path
@@ -114,8 +130,24 @@ def get_targets(source_dir, file, count=0):
                             statement = '{0} {1} {2}'.format(
                                 operandl, node.operator, operandr)
 
+                            operator_kind = None
+
+                            if node.operator in ARITHMETIC_OPERATORS:
+                                operator_kind = 'ArithmeticOperator'
+                            elif node.operator in RELATIONAL_OPERATORS:
+                                operator_kind = 'RelationalOperator'
+                            elif node.operator in LOGICAL_OPERATORS:
+                                operator_kind = 'LogicalOperator'
+                            elif node.operator in BINARY_LOGICAL_OPERATORS:
+                                operator_kind = 'BinaryLogicalOperator'
+
                             statement_nodes = '{0} {1} {2}'.format(
-                                str(node.operandl), str(node),
+                                str(node.operandl), operator_kind,
+                                str(node.operandr)
+                            )
+
+                            operand_nodes = '{0} {1} {2}'.format(
+                                str(node.operandl), node.operator,
                                 str(node.operandr)
                             )
 
@@ -131,7 +163,10 @@ def get_targets(source_dir, file, count=0):
                                 'statement_nodes': statement_nodes,
                                 'context': context,
                                 'context_full': context_full,
-                                'method_ast': method_ast
+                                'method_ast': method_ast,
+                                'operand_nodes': operand_nodes,
+                                'operator_kind': operator_kind,
+                                'operator': node.operator
                             })
                             count += 1
     return targets
@@ -235,3 +270,29 @@ def _ast(node):
                         'children': _ast(c)
                 })
     return d
+
+
+def _method_invocation_to_str(method_invocation):
+    call = ''
+    if method_invocation.qualifier:
+        call = method_invocation.qualifier + '.'
+    call += method_invocation.member + '( '
+
+    arguments = []
+
+    for argument in method_invocation.arguments:
+        arg = ''
+        if isinstance(argument, tree.MemberReference):
+            if argument.qualifier:
+                arg = '.'.join([argument.qualifier,
+                                argument.member])
+            else:
+                arg = argument.member
+        elif isinstance(argument, tree.Literal):
+            arg = argument.value
+
+        arguments.append(arg)
+
+    call += ', '.join(arguments) + ' )'
+
+    return call
