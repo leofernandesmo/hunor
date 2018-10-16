@@ -174,21 +174,21 @@ class Mutant:
         original = transformation[1].strip().replace(' ', '')
         mutation = transformation[1].strip().replace(' ', '')
         if self.operator == 'COI':
-            return self.operator + ': ' + '!()'
+            return self.operator + ' ' + '!()'
         else:
             label = re.sub(r'[a-zA-Z0-9._(),]*', '', mutation)
             if len(label) == 0:
-                if mutation == 'true':
-                    return self.operator + ': ' + 'true'
-                elif mutation == 'false':
-                    return self.operator + ': ' + 'false'
+                if self.operator == 'ROR' and mutation == 'true':
+                    return self.operator + ' ' + 'true'
+                elif self.operator == 'ROR' and mutation == 'false':
+                    return self.operator + ' ' + 'false'
                 elif original.startswith(mutation):
-                    return self.operator + ': ' + 'lhs'
+                    return self.operator + ' ' + 'lhs'
                 elif original.endswith(mutation):
-                    return self.operator + ': ' + 'rhs'
-                return self.operator + ': ' + mutation
+                    return self.operator + ' ' + 'rhs'
+                return self.operator + ' ' + mutation
 
-        return self.operator + ': ' + label
+        return self.operator + ' ' + label
 
 
 def _create_label(brothers):
