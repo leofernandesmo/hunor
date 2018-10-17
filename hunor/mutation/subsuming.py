@@ -73,11 +73,11 @@ def create_dmsg(mutants, export_dir=''):
     dot = Digraph()
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
-        dot.node(str(label), str(label))
+        dot.node(str(label), label=str(mutant['mutation_label']))
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         for s in mutant['subsumes']:
-            dot.edge(str(s), str(label))
+            dot.edge(str(label), str(s))
 
     dot.encoding = 'utf-8'
 

@@ -1,4 +1,5 @@
 import re
+import os
 
 from hunor.utils import list_equal
 from difflib import ndiff
@@ -13,7 +14,7 @@ class Result:
 class Mutant:
 
     def __init__(self, mid, operator, original_symbol, replacement_symbol,
-                 method, line_number, transformation, path=list()):
+                 method, line_number, transformation, path):
         self.id = mid
         self.operator = operator
         self.original_symbol = original_symbol
@@ -30,6 +31,8 @@ class Mutant:
         self.result = Result()
         self.is_invalid = False
         self.label = mid
+        self.mutation = self.gen_label()
+        self.mutation_label = self.mutation
 
     def __str__(self):
         return '{0}#{1}'.format(self.operator, self.id)
@@ -78,7 +81,7 @@ class Mutant:
             fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
-                and fail_tests_b.issubset(fail_tests_a))
+                and fail_tests_a.issubset(fail_tests_b))
 
     def is_subsumed_by(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
@@ -89,7 +92,7 @@ class Mutant:
             fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
-                and fail_tests_a.issubset(fail_tests_b))
+                and fail_tests_b.issubset(fail_tests_a))
 
     def subsuming_equal(self, mutant):
         return (list_equal(self.brothers, mutant.brothers)
@@ -120,18 +123,22 @@ class Mutant:
             'replacement_symbol': self.replacement_symbol,
             'method': self.method,
             'line_number': self.line_number,
-            'transformation': self.transformation,
+            'transformation': self.transformation.strip() if self.transformation
+            else None,
             'maybe_equivalent': self.maybe_equivalent,
             'has_brother': self.has_brother,
             'brothers': [str(m.id) for m in self.brothers],
             'subsumes': subsumes,
             'subsumed_by': subsumed_by,
-            'path': self.path,
+            'path': self.path.split(os.sep)[-2:],
             'is_invalid': self.is_invalid,
             'label': self.label,
             'test_suites': test_suites,
-            'diff': self.diff(),
-            'mutation': self.gen_label()
+            'mutation': self.gen_label(),
+            'is_redundant': self.is_redundant(),
+            'belongs_to_minimal': self.belongs_to_minimal(),
+            'is_useless': self.is_useless(),
+            'mutation_label': self.mutation_label
         }
 
     def set_as_brother(self, brother):
@@ -144,17 +151,34 @@ class Mutant:
             brother.brothers.append(self)
 
         all_brothers = set()
+        all_brothers_mutation = set()
 
         for b in self.brothers:
             all_brothers.add(b.id)
+            all_brothers_mutation.add(b.mutation)
 
         for b in brother.brothers:
             all_brothers.add(b.id)
+            all_brothers_mutation.add(b.mutation)
 
         label = _create_label(all_brothers)
 
         self.label = label
         brother.label = label
+
+        mutation_label = _create_label(all_brothers_mutation)
+
+        self.mutation_label = mutation_label
+        brother.mutation_label = mutation_label
+
+    def is_redundant(self):
+        return len(self.subsumed_by) > 0 or self.has_brother
+
+    def belongs_to_minimal(self):
+        return len(self.subsumed_by) == 0 and not self.maybe_equivalent
+
+    def is_useless(self):
+        return len(self.subsumed_by) > 0 or self.maybe_equivalent
 
     def statement(self):
         return self.transformation.split(' => ')[0].strip()
@@ -171,7 +195,7 @@ class Mutant:
 
     def gen_label(self):
         transformation = self.transformation.split(' => ')
-        original = transformation[1].strip().replace(' ', '')
+        original = transformation[0].strip().replace(' ', '')
         mutation = transformation[1].strip().replace(' ', '')
         if self.operator == 'COI':
             return self.operator + ' ' + '!()'

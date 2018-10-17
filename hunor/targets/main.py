@@ -159,6 +159,7 @@ def get_targets(source_dir, file, count=0):
                                 'type_method': '{0}_{1}'.format(
                                     method_type, method_prototype),
                                 'line': node.operandl.position[0],
+                                'column': node.operandl.position[1],
                                 'statement': statement,
                                 'statement_nodes': statement_nodes,
                                 'context': context,
