@@ -70,6 +70,7 @@ class JUnit:
         fail = 0
         fail_tests = set()
         coverage = 0
+        coverage_tests = set()
 
         for test_class in test_suite.classes:
             t, f, f_s = self._run_test(test_suite.source_dir,
@@ -84,7 +85,9 @@ class JUnit:
             if original_path is not None:
                 coverage_src = os.path.join(original_path, test_suite.id)
 
-            coverage += self._count_line_coverage(coverage_src, mutation_line)
+            c, c_t = self._count_line_coverage(coverage_src, mutation_line)
+            coverage += c
+            coverage_tests = coverage_tests.union(c_t)
             coverage_report_dir = os.path.join(test_suite.source_dir,
                                                'coverage-report')
             coverage_report_dst_dir = os.path.join(
@@ -96,14 +99,15 @@ class JUnit:
             if os.path.exists(coverage_report_dir):
                 shutil.copytree(coverage_report_dir, coverage_report_dst_dir)
 
-        return total, fail, fail_tests, coverage
+        return total, fail, fail_tests, coverage, coverage_tests
 
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line,
                         original_path=None):
         test_suites = copy.deepcopy(test_suites)
         for t in test_suites:
             test_suite = test_suites[t]
-            total, fail, fail_tests, coverage = self._run_test_suite(
+            (total, fail, fail_tests,
+             coverage, coverage_tests) = self._run_test_suite(
                 test_suite, mutant_classpath, mutation_line, original_path)
 
             test_suite.fail = (fail != 0)
@@ -111,6 +115,7 @@ class JUnit:
             test_suite.tests_total = total
             test_suite.fail_tests_total = fail
             test_suite.fail_tests = fail_tests
+            test_suite.coverage_tests = coverage_tests
 
         return test_suites
 
@@ -121,6 +126,7 @@ class JUnit:
             self.sut_class.replace('.', os.sep) + '.html')
 
         total = 0
+        tests = set()
 
         if os.path.exists(report_html_path):
             with open(report_html_path) as html:
@@ -131,9 +137,11 @@ class JUnit:
                     if td_line and td_count:
                         if mutation_line == int(td_line[0].string):
                             total = len(tr.find_all('li'))
+                            for li in tr.find_all('li'):
+                                tests.add(_extract_li_id(li.string))
                 html.close()
 
-        return total
+        return total, tests
 
 
 def _extract_results_ok(output):
@@ -169,3 +177,9 @@ def _extract_test_id(output):
             print("*** ERROR: Error in regex of junit output.")
 
     return tests_fail
+
+
+def _extract_li_id(li):
+    file = re.findall(r'[A-Za-z0-9_]+#', li)[0][:-1]
+    test_case = re.findall(r'#test[0-9]+:', li)[0][1:-1]
+    return '{0}#{1}'.format(file, test_case)

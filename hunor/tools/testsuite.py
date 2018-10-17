@@ -17,14 +17,22 @@ class TestSuiteResult:
         self.tests_total = 0
         self.fail_tests_total = 0
         self.fail_tests = set()
+        self.coverage_tests = set()
 
     def to_dict(self):
         return {
             'coverage': self.coverage,
             'tests_total': self.tests_total,
             'fail_tests_total': self.fail_tests_total,
-            'fail_tests': list(self.fail_tests)
+            'fail_tests': list(self.fail_tests),
+            'coverage_tests': list(self.coverage_tests),
+            'fail_coverage_tests': list(self.fail_coverage_tests),
+            'fail_coverage_tests_total': len(self.fail_coverage_tests)
         }
+
+    @property
+    def fail_coverage_tests(self):
+        return self.coverage_tests.intersection(self.fail_tests)
 
     def copy_without_excluded(self, excluded):
         result = copy.deepcopy(self)

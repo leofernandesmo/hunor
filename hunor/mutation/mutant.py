@@ -31,6 +31,7 @@ class Mutant:
         self.result = Result()
         self.is_invalid = False
         self.label = mid
+        self.statement_operator = None
         self.mutation = self.gen_label()
         self.mutation_label = self.mutation
 
@@ -48,7 +49,7 @@ class Mutant:
 
         for test_suite in self.result.test_suites:
             fail_tests = fail_tests.union(
-                self.result.test_suites[test_suite].fail_tests)
+                self.result.test_suites[test_suite].fail_coverage_tests)
 
         return fail_tests
 
@@ -138,7 +139,8 @@ class Mutant:
             'is_redundant': self.is_redundant(),
             'belongs_to_minimal': self.belongs_to_minimal(),
             'is_useless': self.is_useless(),
-            'mutation_label': self.mutation_label
+            'mutation_label': self.mutation_label,
+            'statement_operator': self.operator
         }
 
     def set_as_brother(self, brother):
@@ -195,24 +197,73 @@ class Mutant:
 
     def gen_label(self):
         transformation = self.transformation.split(' => ')
-        original = transformation[0].strip().replace(' ', '')
-        mutation = transformation[1].strip().replace(' ', '')
-        if self.operator == 'COI':
-            return self.operator + ' ' + '!()'
-        else:
-            label = re.sub(r'[a-zA-Z0-9._(),]*', '', mutation)
-            if len(label) == 0:
-                if self.operator == 'ROR' and mutation == 'true':
-                    return self.operator + ' ' + 'true'
-                elif self.operator == 'ROR' and mutation == 'false':
-                    return self.operator + ' ' + 'false'
-                elif original.startswith(mutation):
-                    return self.operator + ' ' + 'lhs'
-                elif original.endswith(mutation):
-                    return self.operator + ' ' + 'rhs'
-                return self.operator + ' ' + mutation
+        ori_lhs, ori_rhs, ori_op = _split_expression(transformation[0])
+        mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1])
 
-        return self.operator + ' ' + label
+        self.statement_operator = ori_op
+        label = self.id
+
+        if self.operator == 'ROR':
+            if mut_op is not None:
+                label = '{0} {1}'.format('ROR', mut_op)
+            else:
+                label = '{0} {1}'.format('ROR', mut_lhs)
+        elif self.operator == 'AORB':
+            label = '{0} {1}'.format('AORB', mut_op)
+        elif self.operator == 'COI':
+            label = '{0} {1}'.format('COI', '!()')
+        elif self.operator == 'CDL':
+            label = '{0} {1}'.format(
+                'CDL', _check_hand_side(mut_lhs, ori_lhs, ori_rhs))
+        elif self.operator == 'VDL':
+            label = '{0} {1}'.format(
+                'VDL', _check_hand_side(mut_lhs, ori_lhs, ori_rhs))
+        elif self.operator == 'ODL':
+            label = '{0} {1}'.format(
+                'ODL', _check_hand_side(mut_lhs, ori_lhs, ori_rhs))
+
+        return label
+
+
+def _check_hand_side(to_check, lhs, rhs):
+    side = None
+
+    if to_check == lhs:
+        side = 'lhs'
+    elif to_check == rhs:
+        side = 'rhs'
+
+    return side
+
+
+def _split_expression(expression):
+
+    two_char = ['==', '>=', '<=', '!=', '&&', '||']
+    one_char = ['>', '<', '&', '|', '^', '+', '-', '*', '/', '%']
+
+    exp_operator = None
+    rhs = None
+
+    for operator in two_char:
+        if (operator in expression
+                and not expression.startswith(operator)
+                and not expression.endswith(operator)):
+            exp_operator = operator
+
+    if exp_operator is None:
+        for operator in one_char:
+            if (operator in expression
+                    and not expression.startswith(operator)
+                    and not expression.endswith(operator)):
+                exp_operator = operator
+
+    if exp_operator is not None:
+        lhs = expression.split(exp_operator)[0].strip()
+        rhs = expression.split(exp_operator)[1].strip()
+    else:
+        lhs = expression.strip()
+
+    return lhs, rhs, exp_operator
 
 
 def _create_label(brothers):
