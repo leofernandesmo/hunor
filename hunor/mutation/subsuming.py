@@ -118,8 +118,9 @@ def minimize(mutants, coverage_threshold=0):
                 mutants[key].result.test_suites[test_suite]
                 .copy_without_excluded(excluded_tests))
 
-    return (subsuming(mutants, coverage_threshold=coverage_threshold),
-            all_tests.difference( excluded_tests))
+    return (subsuming(mutants, coverage_threshold=coverage_threshold,
+                      ignored_tests=excluded_tests),
+            all_tests.difference(excluded_tests))
 
 
 def _subsuming_equals(mutants_a, mutants_b):

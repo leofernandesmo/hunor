@@ -104,15 +104,27 @@ class Mutant:
 
         subsumes = []
         subsumed_by = []
+        id_subsumes = []
+        id_subsumed_by = []
         test_suites = {}
+
+        brothers = [str(m.id) for m in self.brothers]
 
         for m in self.subsumes:
             if m.label != self.label and m.label not in subsumes:
                 subsumes.append(m.label)
 
+            if (m.id != self.id
+                    and m.id not in id_subsumes
+                    and m.id not in brothers):
+                id_subsumes.append(m.id)
+
         for m in self.subsumed_by:
             if m.label != self.label and m.label not in subsumed_by:
                 subsumed_by.append(m.label)
+
+            if m.id != self.id and m.id not in id_subsumed_by:
+                id_subsumed_by.append(m.id)
 
         for t in self.result.test_suites:
             test_suites[t] = self.result.test_suites[t].to_dict()
@@ -128,9 +140,11 @@ class Mutant:
             else None,
             'maybe_equivalent': self.maybe_equivalent,
             'has_brother': self.has_brother,
-            'brothers': [str(m.id) for m in self.brothers],
+            'brothers': brothers,
             'subsumes': subsumes,
             'subsumed_by': subsumed_by,
+            'subsumes_id': id_subsumes,
+            'subsumed_by_id': id_subsumed_by,
             'path': self.path.split(os.sep)[-2:],
             'is_invalid': self.is_invalid,
             'label': self.label,

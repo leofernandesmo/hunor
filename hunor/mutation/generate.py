@@ -8,6 +8,8 @@ from hunor.tools.maven import Maven
 from hunor.utils import get_class_files, write_json, read_json
 from hunor.args import arg_parser, to_options
 from hunor.main import Hunor
+from hunor.models.database import Database
+from hunor.models.queries import Queries
 
 
 def main():
@@ -52,6 +54,9 @@ def main():
     total_time = start_time - start_time
     count = 1
 
+    db = Queries(Database(options.mutants))
+    db.create_tables()
+
     for i, file in enumerate(files):
 
         eta = ((total_time / count)
@@ -74,6 +79,7 @@ def main():
                 o.no_compile = True
                 mutants, _ = Hunor(o).run()
                 target['mutants'] = mutants
+                db.save_target_and_mutants(target, mutants)
 
             save_status['files'].append(file)
             save_status['targets'] += len(t)
