@@ -1,4 +1,5 @@
 import os
+import re
 import json
 
 
@@ -52,3 +53,8 @@ def list_equal(a, b):
 
 def set_equal(a, b):
     return a.issubset(b) and b.issubset(a)
+
+
+def sort_files(files):
+    return sorted(files, key=lambda x: (int(0 if re.sub(r'[^0-9]+', '', x) == ''
+                                            else re.sub(r'[^0-9]+', '', x)), x))

@@ -82,7 +82,8 @@ class Mutant:
             fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
-                and fail_tests_a.issubset(fail_tests_b))
+                and fail_tests_a.issubset(fail_tests_b)
+                and not self.is_brother(mutant))
 
     def is_subsumed_by(self, mutant, ignore_tests=None):
         fail_tests_a = self.get_fail_tests()
@@ -93,7 +94,8 @@ class Mutant:
             fail_tests_b = fail_tests_b.difference(ignore_tests)
 
         return (not self.is_invalid and not self.maybe_equivalent
-                and fail_tests_b.issubset(fail_tests_a))
+                and fail_tests_b.issubset(fail_tests_a)
+                and not self.is_brother(mutant))
 
     def subsuming_equal(self, mutant):
         return (list_equal(self.brothers, mutant.brothers)
@@ -123,7 +125,9 @@ class Mutant:
             if m.label != self.label and m.label not in subsumed_by:
                 subsumed_by.append(m.label)
 
-            if m.id != self.id and m.id not in id_subsumed_by:
+            if (m.id != self.id
+                    and m.id not in id_subsumed_by
+                    and m.id not in brothers):
                 id_subsumed_by.append(m.id)
 
         for t in self.result.test_suites:

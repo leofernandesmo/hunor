@@ -1,5 +1,6 @@
 import os
 import json
+import copy
 
 import javalang
 import javalang.tree as tree
@@ -160,7 +161,7 @@ def get_targets(source_dir, file, count=0):
                                     method_type, method_prototype),
                                 'line': node.operandl.position[0],
                                 'column': node.operandl.position[1],
-                                'statement': statement,
+                                'statement': statement.strip(),
                                 'statement_nodes': statement_nodes,
                                 'context': context,
                                 'context_full': context_full,
@@ -170,7 +171,34 @@ def get_targets(source_dir, file, count=0):
                                 'operator': node.operator
                             })
                             count += 1
+
+    targets = clean_ambiguous(targets)
     return targets
+
+
+def clean_ambiguous(targets):
+    clean = []
+    initial_id = targets[0]['id']
+
+    for a in targets:
+        ambiguous = False
+        for b in targets:
+            if (a['id'] != b['id']
+               and a['class'] == b['class']
+               and a['type_method'] == b['type_method']
+               and a['line'] == b['line']
+               and a['statement'] == b['statement']):
+                ambiguous = True
+                break
+        if not ambiguous:
+            clean.append(a)
+
+    count = initial_id
+    for c in clean:
+        c['id'] = count
+        count += 1
+
+    return clean
 
 
 def write_config_json(targets, output_dir=''):

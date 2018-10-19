@@ -5,7 +5,7 @@ import time
 from hunor.tools.mujava import MuJava
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
-from hunor.utils import get_class_files, write_json, read_json
+from hunor.utils import get_class_files, write_json, read_json, sort_files
 from hunor.args import arg_parser, to_options
 from hunor.main import Hunor
 from hunor.models.database import Database
@@ -54,10 +54,10 @@ def main():
     total_time = start_time - start_time
     count = 1
 
-    db = Queries(Database(options.mutants))
+    db = Queries(Database(os.path.join(options.mutants, 'mutation.db')))
     db.create_tables()
 
-    for i, file in enumerate(files):
+    for i, file in enumerate(sort_files(files)):
 
         eta = ((total_time / count)
                * (len(files) - len(save_status['files']) - i))

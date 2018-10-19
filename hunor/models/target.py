@@ -22,6 +22,38 @@ class Target(BaseModel):
     operator = CharField(null=True)
     coverage = IntegerField(null=False)
 
+    @staticmethod
+    def find_all(coverage=0):
+        return Target.select(Target.coverage >= coverage)
+
+    @staticmethod
+    def find_all_by_statement(statement, coverage=0):
+        return Target.select().where(
+            (Target.statement.contains(statement))
+            & (Target.coverage >= coverage)
+        )
+
+    @staticmethod
+    def find_all_by_statement_nodes(statement_nodes, coverage=0):
+        return Target.select().where(
+            (Target.statement_nodes.contains(statement_nodes))
+            & (Target.coverage >= coverage)
+        )
+
+    @staticmethod
+    def find_all_by_operator(operator, coverage=0):
+        return Target.select().where(
+            (Target.operator == operator)
+            & (Target.coverage >= coverage)
+        )
+
+    @staticmethod
+    def find_all_by_operator_kind(operator_kind, coverage=0):
+        return Target.select().where(
+            (Target.operator_kind == operator_kind)
+            & (Target.coverage >= coverage)
+        )
+
 
 def dict_to_target(d):
     target = Target()

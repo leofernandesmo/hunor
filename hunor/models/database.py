@@ -1,5 +1,3 @@
-import os
-
 from peewee import *
 
 database_proxy = Proxy()
@@ -12,7 +10,6 @@ class BaseModel(Model):
 
 class Database:
 
-    def __init__(self, output):
-        database_dir = os.path.join(output, 'mutation.db')
+    def __init__(self, database_dir):
         self.db = SqliteDatabase(database_dir)
         database_proxy.initialize(self.db)
