@@ -22,7 +22,7 @@ setup(
         'hunor',
         'hunor.tools',
         'hunor.mutation',
-        'hunor.models',
+        'hunor.db',
         'hunor.targets'
     ],
     install_requires=[

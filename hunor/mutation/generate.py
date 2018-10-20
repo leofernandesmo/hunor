@@ -8,8 +8,8 @@ from hunor.tools.maven import Maven
 from hunor.utils import get_class_files, write_json, read_json, sort_files
 from hunor.args import arg_parser, to_options
 from hunor.main import Hunor
-from hunor.models.database import Database
-from hunor.models.queries import Queries
+from hunor.db.models import Database
+from hunor.db.queries import Queries
 
 
 def main():

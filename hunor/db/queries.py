@@ -1,7 +1,7 @@
-from hunor.models.mutant import Mutant, Brotherhood, Subsumption
-from hunor.models.mutant import MutantTestSuite, dict_to_mutant
-from hunor.models.test_suite import TestSuite, dict_to_test_suite
-from hunor.models.target import Target, dict_to_target
+from hunor.db.models import Mutant, Brotherhood, Subsumption
+from hunor.db.models import dict_to_mutant
+from hunor.db.models import TestSuite, dict_to_test_suite
+from hunor.db.models import Target, dict_to_target
 
 
 class Queries:
@@ -14,7 +14,6 @@ class Queries:
             Mutant,
             Brotherhood,
             Subsumption,
-            MutantTestSuite,
             TestSuite,
             Target
         ])
@@ -22,7 +21,8 @@ class Queries:
     def close(self):
         self.db.close()
 
-    def save_target_and_mutants(self, target, mutants):
+    @staticmethod
+    def save_target_and_mutants(target, mutants):
         t = dict_to_target(target)
 
         coverage = 0
@@ -45,11 +45,8 @@ class Queries:
             for test_suite in mutant['test_suites']:
                 t_s = dict_to_test_suite(test_suite,
                                          mutant['test_suites'][test_suite])
+                t_s.mutant = m
                 t_s.save()
-                m_t = MutantTestSuite()
-                m_t.mutant = m
-                m_t.test_suite = t_s
-                m_t.save()
 
         for mutant in mutants:
             m = Mutant.get(Mutant.id == mid_to_id[mutant['id']])

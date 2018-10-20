@@ -1,6 +1,5 @@
 import os
 import json
-import copy
 
 import javalang
 import javalang.tree as tree

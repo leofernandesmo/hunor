@@ -1,6 +1,8 @@
 import os
 import copy
 
+from random import shuffle
+
 from itertools import combinations
 from graphviz import Digraph, ExecutableNotFound
 
@@ -69,7 +71,7 @@ def _remove_invalid_and_equivalent(mutants, coverage_threshold):
     return r
 
 
-def create_dmsg(mutants, export_dir=''):
+def create_dmsg(mutants, export_dir='', format='png'):
     dot = Digraph()
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
@@ -82,9 +84,7 @@ def create_dmsg(mutants, export_dir=''):
     dot.encoding = 'utf-8'
 
     try:
-        dot.format = 'svg'
-        dot.render(os.path.join(export_dir, 'DMSG'))
-        dot.format = 'png'
+        dot.format = format
         dot.render(os.path.join(export_dir, 'DMSG'))
     except ExecutableNotFound:
         print("[WARNING]: Graphviz not found. "
@@ -93,7 +93,7 @@ def create_dmsg(mutants, export_dir=''):
     return dot
 
 
-def minimize(mutants, coverage_threshold=0):
+def minimize(mutants, coverage_threshold=0, shuffle_tests=False):
     mutants = copy.deepcopy(mutants)
     all_tests = set()
 
@@ -104,7 +104,12 @@ def minimize(mutants, coverage_threshold=0):
     original = subsuming(mutants, clean=False,
                          coverage_threshold=coverage_threshold)
     excluded_tests = set()
-    for t in all_tests:
+
+    to_check = list(all_tests)
+    if shuffle_tests:
+        shuffle(to_check)
+
+    for t in to_check:
         excluded_tests.add(t)
         if not _subsuming_equals(
                 original,

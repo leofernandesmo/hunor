@@ -19,3 +19,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+from hunor.db.models import *
+db = Database('/home/marcio/Projects/hunor/example/relational/mutants/gen/mutation.db')
+redundant_abstrat(Target.find_all_by_operator('>', coverage="100"))
+target = Target.find_all_by_operator('>=')[0]
+target.get_a_minimal_test_set()
+target.save_dmsg('.')
+
