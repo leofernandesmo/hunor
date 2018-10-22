@@ -86,7 +86,7 @@ class JUnit:
                 coverage_src = os.path.join(original_path, test_suite.id)
 
             c, c_t = self._count_line_coverage(coverage_src, mutation_line)
-            coverage += len(c_t)
+            coverage += c
             coverage_tests = coverage_tests.union(c_t)
             coverage_report_dir = os.path.join(test_suite.source_dir,
                                                'coverage-report')
@@ -150,7 +150,7 @@ class JUnit:
                                     tests.add(method_name)
                 html.close()
 
-        return total, tests
+        return len(tests), tests
 
 
 def _extract_results_ok(output):
