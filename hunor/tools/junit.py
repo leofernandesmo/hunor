@@ -138,7 +138,9 @@ class JUnit:
                         if mutation_line == int(td_line[0].string):
                             total = len(tr.find_all('li'))
                             for li in tr.find_all('li'):
-                                tests.add(_extract_li_id(li.string))
+                                method_name = _extract_li_id(li.string)
+                                if method_name is not None:
+                                    tests.add(method_name)
                 html.close()
 
         return total, tests
@@ -180,6 +182,9 @@ def _extract_test_id(output):
 
 
 def _extract_li_id(li):
-    file = re.findall(r'[A-Za-z0-9_]+#', li)[0][:-1]
-    test_case = re.findall(r'#test[0-9]+:', li)[0][1:-1]
-    return '{0}#{1}'.format(file, test_case)
+    try:
+        file = re.findall(r'[A-Za-z0-9_]+#', li)[0][:-1]
+        test_case = re.findall(r'#test[0-9]+:', li)[0][1:-1]
+        return '{0}#{1}'.format(file, test_case)
+    except IndexError:
+        return None
