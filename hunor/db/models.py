@@ -5,6 +5,7 @@ from hunor.mutation.mutant import Mutant as HunorMutant
 from hunor.tools.testsuite import TestSuiteResult
 from hunor.mutation.mutant import Result
 from hunor.mutation.subsuming import *
+from hunor.utils import write_json
 
 
 database_proxy = Proxy()
@@ -44,7 +45,8 @@ class Target(BaseModel):
         mutants = {}
         for m in self.mutants:
             mutants[m.mid] = to_hunor_mutant(m)
-        create_dmsg(subsuming(mutants), export_dir=output_dir, format=format)
+        create_dmsg(subsuming(mutants), export_dir=output_dir,
+                    format=format, filename=self.tid)
 
     def get_a_minimal_test_set(self, shuffle=True):
         mutants = {}
@@ -85,6 +87,14 @@ class Target(BaseModel):
             (Target.operator_kind == operator_kind)
             & (Target.coverage >= coverage)
         )
+
+    @staticmethod
+    def save_all_dmsg(targets, output_dir):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        for target in targets:
+            target.save_dmsg(output_dir=output_dir)
 
 
 class Mutant(BaseModel):
@@ -173,7 +183,7 @@ class Mutant(BaseModel):
         ).group_by(Mutant.mutation))
 
 
-def redundant_abstract(targets):
+def redundant_abstract(targets, output_dir=None):
     red = Mutant.is_redundant_in_targets_group_by_mutation(targets)
     not_red = Mutant.is_not_redundant_in_targets_group_by_mutation(targets)
     min = Mutant.belongs_to_minimal_in_targets_group_by_mutation(targets)
@@ -194,9 +204,12 @@ def redundant_abstract(targets):
             'redundant': red[r] if r in red.keys() else 0,
             'not_redundant': not_red[r] if r in not_red.keys() else 0,
             'dominant': min[r] if r in min.keys() else 0,
-            'not_dominant': not_min[r] if r in not_min.keys() else 0,
+            'subsumed': not_min[r] if r in not_min.keys() else 0,
             'total': total[r]
         }
+
+    if output_dir is not None:
+        write_json(abstract, output_dir=output_dir, name='abstract')
 
     return abstract
 
