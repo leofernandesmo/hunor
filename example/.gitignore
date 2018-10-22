@@ -4,3 +4,7 @@ commons-math/
 **/mutants/**/config.json
 pamvotis/
 joda-time/
+minimal/.idea
+minimal/*.iml
+mutants/
+commons-math/
