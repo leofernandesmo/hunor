@@ -138,7 +138,7 @@ class MuJava:
                 m = mutants[mutant]
                 src = os.path.join(trad_mutants, m.method, m.id)
                 if (target['line'] == m.line_number
-                        and _statement_equal(target['statement'], m.statement())
+                        and _statement_equal(target, m)
                         and os.path.exists(src)):
                     pck = os.sep.join(java_file.split(os.sep)[0:-1])
                     dst = os.path.join(mutant_target, m.id, pck)
@@ -170,5 +170,7 @@ class MuJava:
         return useful_targets
 
 
-def _statement_equal(a, b):
-    return a.replace(' ', '') == b.replace(' ', '')
+def _statement_equal(target, mutant):
+    return ((target['statement'].replace(' ', '') ==
+            mutant.statement().replace(' ', '')) or (mutant.statement() in
+            target['subjects']))

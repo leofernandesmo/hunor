@@ -1,4 +1,3 @@
-import re
 import os
 
 from hunor.utils import list_equal
@@ -239,8 +238,37 @@ class Mutant:
         elif self.operator == 'ODL':
             label = '{0} {1}'.format(
                 'ODL', _check_hand_side(mut_lhs, ori_lhs, ori_rhs))
-
+        elif self.operator == 'AOIS':
+            label = '{0} {1}'.format(
+                'AOIS', _check_aois(ori_lhs, ori_rhs, transformation[1]))
+        elif self.operator == 'LOI':
+            label = '{0} {1}'.format(
+                'LOI', '~' + _find_subject(ori_lhs, ori_rhs,
+                                           transformation[1]))
+        elif self.operator == 'AOIU':
+            label = '{0} {1}'.format(
+                'AOIU', '-' + _find_subject(ori_lhs, ori_rhs,
+                                            transformation[1]))
         return label
+
+
+def _find_subject(lhs, rhs, mutation):
+    if lhs in mutation:
+        return 'lhs'
+    elif rhs in mutation:
+        return 'rhs'
+    return '?'
+
+
+def _check_aois(lhs, rhs, mutation):
+    if mutation.startswith('++'):
+        return '++' + _find_subject(lhs, rhs, mutation)
+    elif mutation.startswith('--'):
+        return '--' + _find_subject(lhs, rhs, mutation)
+    elif mutation.endswith('++'):
+        return _find_subject(lhs, rhs, mutation) + '++'
+    elif mutation.endswith('--'):
+        return _find_subject(lhs, rhs, mutation) + '--'
 
 
 def _check_hand_side(to_check, lhs, rhs):
@@ -256,8 +284,8 @@ def _check_hand_side(to_check, lhs, rhs):
 
 def _split_expression(expression):
 
-    two_char = ['==', '>=', '<=', '!=', '&&', '||']
-    one_char = ['>', '<', '&', '|', '^', '+', '-', '*', '/', '%']
+    two_char = ['==', '>=', '<=', '!=', '&&', '||', '++', '--']
+    one_char = ['>', '<', '&', '|', '^', '+', '-', '*', '/', '%', '~']
 
     exp_operator = None
     rhs = None
