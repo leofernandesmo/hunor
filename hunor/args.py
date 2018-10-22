@@ -10,7 +10,8 @@ from hunor.utils import config
 DEFAULT = {
     'maven_timeout': 3600,
     'output': 'hunor-output',
-    'coverage_threshold': 1.0
+    'coverage_threshold': 1.0,
+    'suites_number': 1
 }
 
 
@@ -21,7 +22,7 @@ class Options:
                  is_evosuite_disabled=False, is_randoop_disabled=False,
                  maven_timeout=DEFAULT['maven_timeout'],
                  coverage_threshold=DEFAULT['coverage_threshold'],
-                 no_compile=False):
+                 no_compile=False, suites_number=DEFAULT['suites_number']):
 
         if maven_home:
             self.maven_home = os.path.abspath(maven_home)
@@ -44,6 +45,7 @@ class Options:
         self.sut_class = sut_class
         self.mutation_tool = mutation_tool
         self.no_compile = no_compile
+        self.suites_number = suites_number
 
     def __str__(self):
         return json.dumps({
@@ -59,7 +61,8 @@ class Options:
                 'coverage_threshold': self.coverage_threshold,
                 'sut_class': self.sut_class,
                 'mutation_tool': self.mutation_tool,
-                'no_compile': self.no_compile
+                'no_compile': self.no_compile,
+                'suites_number': self.suites_number
         }, indent=2)
 
 
@@ -97,7 +100,8 @@ def to_options(parser):
         output=o.output,
         maven_timeout=o.maven_timeout,
         coverage_threshold=float(o.coverage_threshold),
-        no_compile=o.no_compile
+        no_compile=o.no_compile,
+        suites_number=int(o.suites_number)
     )
 
 
@@ -163,5 +167,10 @@ def arg_parser():
     parser.add_argument('--no-compile',
                         action='store_true',
                         dest='no_compile')
+
+    parser.add_argument('--suites-number',
+                        action='store',
+                        dest='suites_number',
+                        default=DEFAULT['suites_number'])
 
     return parser

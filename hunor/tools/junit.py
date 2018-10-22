@@ -86,7 +86,7 @@ class JUnit:
                 coverage_src = os.path.join(original_path, test_suite.id)
 
             c, c_t = self._count_line_coverage(coverage_src, mutation_line)
-            coverage += c
+            coverage += len(c_t)
             coverage_tests = coverage_tests.union(c_t)
             coverage_report_dir = os.path.join(test_suite.source_dir,
                                                'coverage-report')
@@ -114,10 +114,17 @@ class JUnit:
             test_suite.coverage = coverage
             test_suite.tests_total = total
             test_suite.fail_tests_total = fail
-            test_suite.fail_tests = fail_tests
-            test_suite.coverage_tests = coverage_tests
+            test_suite.fail_tests = self._prefix(test_suite, fail_tests)
+            test_suite.coverage_tests = self._prefix(test_suite, coverage_tests)
 
         return test_suites
+
+    @staticmethod
+    def _prefix(test_suite, ids):
+        result = set()
+        for i in ids:
+            result.add('{0}_{1}'.format(test_suite.prefix, i))
+        return result
 
     def _count_line_coverage(self, output_dir, mutation_line):
 

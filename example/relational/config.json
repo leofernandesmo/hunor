@@ -19,8 +19,9 @@
     "parameters": [
       "-Dsearch_budget=10",
       "-Dmax_length_test_case=2500",
-      "-Dmax_size=2",
-      "-Dminimize=true"
+      "-Dmax_size=3",
+      "-Dminimize=true",
+      "-Dstopping_condition=MaxTime"
     ]
   }
 }

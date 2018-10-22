@@ -31,7 +31,8 @@ class Hunor:
             output=self.options.output,
             is_randoop_disabled=self.options.is_randoop_disabled,
             is_evosuite_disabled=self.options.is_evosuite_disabled,
-            project_dir=self.options.source
+            project_dir=self.options.source,
+            suites_number=self.options.suites_number
         )
 
         junit = JUnit(

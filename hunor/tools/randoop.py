@@ -1,6 +1,7 @@
 import os
 import subprocess
 import json
+import random
 
 from hunor.utils import generate_classpath
 from hunor.utils import get_class_files
@@ -17,9 +18,9 @@ TOOL = 'randoop'
 class Randoop:
 
     def __init__(self, jdk, classpath, config, tests_dir, sut_class,
-                 project_dir=None):
+                 project_dir=None, test_suite_name=TOOL):
         self.jdk = jdk
-        self.tool_tests_dir = os.path.join(tests_dir, TOOL)
+        self.tool_tests_dir = os.path.join(tests_dir, test_suite_name)
         self.tests_dir = tests_dir
         self.sut_class = sut_class
         self.classpath = classpath
@@ -27,6 +28,7 @@ class Randoop:
         self.tests_classes = os.path.join(self.tool_tests_dir, 'classes')
         self.parameters = []
         self.project_dir = project_dir
+        self.test_suite_name = test_suite_name
 
         with open(config, 'r') as c:
             self.parameters = json.loads(c.read())[TOOL]['parameters']
@@ -38,6 +40,7 @@ class Randoop:
             '-classpath', self.classpath + ':' + RANDOOP,
             'randoop.main.Main',
             'gentests',
+            "--randomseed=" + str(random.randint(0, 9999)),
             "--testclass=" + self.sut_class,
             '--junit-output-dir=' + self.tests_src
         ]
