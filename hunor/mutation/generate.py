@@ -79,7 +79,9 @@ def main():
                 o.no_compile = True
                 mutants, _ = Hunor(o).run()
                 target['mutants'] = mutants
-                db.save_target_and_mutants(target, mutants)
+
+            for target in t:
+                db.save_target_and_mutants(target, target['mutants'])
 
             save_status['files'].append(file)
             save_status['targets'] += len(t)
