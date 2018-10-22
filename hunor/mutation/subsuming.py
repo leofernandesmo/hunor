@@ -71,11 +71,16 @@ def _remove_invalid_and_equivalent(mutants, coverage_threshold):
     return r
 
 
-def create_dmsg(mutants, export_dir='', format='png'):
+def create_dmsg(mutants, export_dir='.', filename='DMSG', format='png',
+                render=True):
     dot = Digraph()
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
-        dot.node(str(label), label=str(mutant['mutation_label']))
+        peripheries = '1'
+        if len(mutant['subsumed_by']) == 0:
+            peripheries = '2'
+        dot.node(str(label), label=str(mutant['mutation_label']),
+                 peripheries=peripheries)
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         for s in mutant['subsumes']:
@@ -83,12 +88,13 @@ def create_dmsg(mutants, export_dir='', format='png'):
 
     dot.encoding = 'utf-8'
 
-    try:
-        dot.format = format
-        dot.render(os.path.join(export_dir, 'DMSG'))
-    except ExecutableNotFound:
-        print("[WARNING]: Graphviz not found. "
-              "Install graphviz package for generate DMSG.")
+    if render:
+        try:
+            dot.format = format
+            dot.render(os.path.join(export_dir, str(filename)))
+        except ExecutableNotFound:
+            print("[WARNING]: Graphviz not found. "
+                  "Install graphviz package for generate DMSG.")
 
     return dot
 
