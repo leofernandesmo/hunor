@@ -73,30 +73,76 @@ def _remove_invalid_and_equivalent(mutants, coverage_threshold):
 
 def create_dmsg(mutants, export_dir='.', filename='DMSG', format='png',
                 render=True):
-    dot = Digraph()
+    dot = Digraph('G')
+
+    elements = dmsg_dot_elements(mutants)
+
+    for n in elements[0]:
+        dot.node(n['id'], label=n['label'], peripheries=n['peripheries'])
+    for e in elements[1]:
+        dot.edge(e[0], e[1])
+
+    if render:
+        render_dot(dot, export_dir, filename, format)
+
+    return dot
+
+
+def dmsg_dot_elements(mutants):
+    nodes = []
+    edges = []
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         peripheries = '1'
         if len(mutant['subsumed_by']) == 0:
             peripheries = '2'
-        dot.node(str(label), label=str(mutant['mutation_label']),
-                 peripheries=peripheries)
+        nodes.append({
+            'id': str(label),
+            'label': str(mutant['mutation_label']),
+            'peripheries': peripheries
+        })
 
     for label, mutant in sorted(mutants.items(), key=lambda i: i[0]):
         for s in mutant['subsumes']:
-            dot.edge(str(label), str(s))
+            edges.append((str(label), str(s)))
 
-    dot.encoding = 'utf-8'
+    return nodes, edges
+
+
+def multiple_dmsgs(elements, export_dir='.', filename='DMSG', format='svg',
+                   render=True):
+    dot = Digraph('G')
+    dot.attr(ration='0.7')
+
+    def _n(x, y):
+        return '{0}_{1}'.format(x, y)
+
+    for i, l in enumerate(elements):
+        name, e = l
+        with dot.subgraph(name='cluster_' + str(name)) as c:
+            for n in e[0]:
+                c.node(_n(name, n['id']), label=n['label'],
+                       peripheries=n['peripheries'])
+            for g in e[1]:
+                c.edge(_n(name, g[0]), _n(name, g[1]))
+            c.attr(label=str(name))
+            c.attr(color='lightgrey')
+            c.attr(style='dashed')
 
     if render:
-        try:
-            dot.format = format
-            dot.render(os.path.join(export_dir, str(filename)))
-        except ExecutableNotFound:
-            print("[WARNING]: Graphviz not found. "
-                  "Install graphviz package for generate DMSG.")
+        render_dot(dot, export_dir, filename, format)
 
     return dot
+
+
+def render_dot(dot, export_dir='.', filename='DMSG', format='png'):
+    try:
+        dot.encoding = 'utf-8'
+        dot.format = format
+        dot.render(os.path.join(export_dir, str(filename)))
+    except ExecutableNotFound:
+        print("[WARNING]: Graphviz not found. "
+              "Install graphviz package for generate DMSG.")
 
 
 def minimize(mutants, coverage_threshold=0, shuffle_tests=False):

@@ -42,11 +42,19 @@ class Target(BaseModel):
     coverage = IntegerField(null=False)
 
     def save_dmsg(self, output_dir, format='png'):
+        mutants = self.mutants_to_hunor()
+        create_dmsg(subsuming(mutants), export_dir=output_dir,
+                    format=format, filename=self.tid)
+
+    def get_dmsg(self):
+        mutants = self.mutants_to_hunor()
+        return dmsg_dot_elements(subsuming(mutants))
+
+    def mutants_to_hunor(self):
         mutants = {}
         for m in self.mutants:
             mutants[m.mid] = to_hunor_mutant(m)
-        create_dmsg(subsuming(mutants), export_dir=output_dir,
-                    format=format, filename=self.tid)
+        return mutants
 
     def get_a_minimal_test_set(self, shuffle=True):
         mutants = {}
@@ -58,7 +66,7 @@ class Target(BaseModel):
 
     @staticmethod
     def find_all(coverage=0):
-        return Target.select(Target.coverage >= coverage)
+        return Target.select().where(Target.coverage >= coverage)
 
     @staticmethod
     def find_all_by_statement(statement, coverage=0):
@@ -95,6 +103,18 @@ class Target(BaseModel):
 
         for target in targets:
             target.save_dmsg(output_dir=output_dir)
+
+    @staticmethod
+    def save_all_dmsg_in_one(targets, output_dir, format='svg',
+                             filename='all_dmsgs'):
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        dots = []
+        for target in targets:
+            dots.append((target.tid, target.get_dmsg()))
+
+        return multiple_dmsgs(dots, export_dir=output_dir, format=format,
+                              filename=filename)
 
 
 class Mutant(BaseModel):
