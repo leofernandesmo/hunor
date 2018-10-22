@@ -177,25 +177,26 @@ def get_targets(source_dir, file, count=0):
 
 def clean_ambiguous(targets):
     clean = []
-    initial_id = targets[0]['id']
+    if len(targets) > 0:
+        initial_id = targets[0]['id']
 
-    for a in targets:
-        ambiguous = False
-        for b in targets:
-            if (a['id'] != b['id']
-               and a['class'] == b['class']
-               and a['type_method'] == b['type_method']
-               and a['line'] == b['line']
-               and a['statement'] == b['statement']):
-                ambiguous = True
-                break
-        if not ambiguous:
-            clean.append(a)
+        for a in targets:
+            ambiguous = False
+            for b in targets:
+                if (a['id'] != b['id']
+                   and a['class'] == b['class']
+                   and a['type_method'] == b['type_method']
+                   and a['line'] == b['line']
+                   and a['statement'] == b['statement']):
+                    ambiguous = True
+                    break
+            if not ambiguous:
+                clean.append(a)
 
-    count = initial_id
-    for c in clean:
-        c['id'] = count
-        count += 1
+        count = initial_id
+        for c in clean:
+            c['id'] = count
+            count += 1
 
     return clean
 
