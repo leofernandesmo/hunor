@@ -56,7 +56,7 @@ class JUnit:
             output = subprocess.check_output(command, shell=False,
                                              cwd=test_suite,
                                              stderr=subprocess.DEVNULL,
-                                             timeout=(60 * 5))
+                                             timeout=(60 * 3))
             return _extract_results_ok(output.decode('unicode_escape'))
         except subprocess.CalledProcessError as e:
             return _extract_results(e.output.decode('unicode_escape'))

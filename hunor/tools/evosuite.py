@@ -42,7 +42,7 @@ class Evosuite:
         try:
             return subprocess.check_output(command, shell=False,
                                            cwd=self.tool_tests_dir,
-                                           timeout=5 * 60)
+                                           timeout=10 * 60)
         except subprocess.TimeoutExpired:
             print('# ERROR: {0} generate timed out.'.format(TOOL))
         except subprocess.CalledProcessError as e:

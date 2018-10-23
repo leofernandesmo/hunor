@@ -70,7 +70,7 @@ class MuJava:
             env['CLASSPATH'] = classpath
             return subprocess.check_output(command, shell=False, cwd=cwd,
                                            stderr=subprocess.DEVNULL, env=env,
-                                           timeout=(10 * 60))
+                                           timeout=(5 * 60))
         except subprocess.TimeoutExpired:
             print('# ERROR: muJava timed out.')
         except subprocess.CalledProcessError as e:
