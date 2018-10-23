@@ -154,23 +154,25 @@ class JUnit:
 
 
 def _extract_results_ok(output):
-    result = re.findall(r'OK \([0-9]* tests?\)', output)[0]
-    result = result.replace('(', '')
-    r = [int(s) for s in result.split() if s.isdigit()]
+    result = re.findall(r'OK \([0-9]* tests?\)', output)
+    if len(result) > 0:
+        result = result[0].replace('(', '')
+        r = [int(s) for s in result.split() if s.isdigit()]
 
-    return r[0], 0, set()
+        return r[0], 0, set()
+    return 0, 0, set()
 
 
 def _extract_results(output):
-    if len(re.findall(r'initializationError', output)) > 0:
-        return 0, 0, set()
-
-    result = re.findall(r'Tests run: [0-9]*,[ ]{2}Failures: [0-9]*', output)[0]
-    result = result.replace(',', ' ')
-    r = [int(s) for s in result.split() if s.isdigit()]
-    tests_fail = _extract_test_id(output)
-
-    return r[0], r[1], tests_fail
+    if len(re.findall(r'initializationError', output)) == 0:
+        result = re.findall(r'Tests run: [0-9]*,[ ]{2}Failures: [0-9]*', output)
+        if len(result) > 0:
+            result = result[0]
+            result = result.replace(',', ' ')
+            r = [int(s) for s in result.split() if s.isdigit()]
+            tests_fail = _extract_test_id(output)
+            return r[0], r[1], tests_fail
+    return 0, 0, set()
 
 
 def _extract_test_id(output):
