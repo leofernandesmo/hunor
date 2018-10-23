@@ -41,7 +41,7 @@ class Maven:
         return subprocess.check_output(command, cwd=project_dir, env=env,
                                        timeout=timeout)
 
-    def compile(self, project_dir, timeout=(10 * 60)):
+    def compile(self, project_dir, timeout=(20 * 60)):
         try:
             project_dir = os.path.abspath(project_dir)
             if not self.no_compile:
