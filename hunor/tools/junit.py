@@ -105,17 +105,19 @@ class JUnit:
                         original_path=None):
         test_suites = copy.deepcopy(test_suites)
         for t in test_suites:
-            test_suite = test_suites[t]
-            (total, fail, fail_tests,
-             coverage, coverage_tests) = self._run_test_suite(
-                test_suite, mutant_classpath, mutation_line, original_path)
+            if test_suites[t].is_valid:
+                test_suite = test_suites[t]
+                (total, fail, fail_tests,
+                 coverage, coverage_tests) = self._run_test_suite(
+                    test_suite, mutant_classpath, mutation_line, original_path)
 
-            test_suite.fail = (fail != 0)
-            test_suite.coverage = coverage
-            test_suite.tests_total = total
-            test_suite.fail_tests_total = fail
-            test_suite.fail_tests = self._prefix(test_suite, fail_tests)
-            test_suite.coverage_tests = self._prefix(test_suite, coverage_tests)
+                test_suite.fail = (fail != 0)
+                test_suite.coverage = coverage
+                test_suite.tests_total = total
+                test_suite.fail_tests_total = fail
+                test_suite.fail_tests = self._prefix(test_suite, fail_tests)
+                test_suite.coverage_tests = self._prefix(test_suite,
+                                                         coverage_tests)
 
         return test_suites
 

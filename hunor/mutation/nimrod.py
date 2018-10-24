@@ -25,8 +25,12 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
         f.close()
 
     original_dir = os.path.join(mutants_dir, 'ORIGINAL')
+
     if os.path.exists(original_dir):
-        junit.run_test_suites(test_suites, original_dir, 0)
+        ori_test_suites = junit.run_test_suites(test_suites, original_dir, 0)
+        for t in ori_test_suites:
+            if ori_test_suites[t].tests_total == 0:
+                test_suites[t].is_valid = False
 
     print("RUNNING TEST SUITES FOR ALL MUTANTS...")
     for i, m in enumerate(mutants):
@@ -72,20 +76,25 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                 print('\t\tcoverage: {0}/{4} ({1}) tests fail: {2}/{3}'.format(
                     coverage, ', '.join(coverage_log), fail_tests_total,
                     tests_total, coverage_threshold))
-                with open(os.path.join(output, 'equivalents.csv'), 'a') as f:
-                    if coverage >= coverage_threshold and not fail:
-                        print('\t\t +++ THIS MUTANT MAY BE EQUIVALENT!')
-                        mutant.maybe_equivalent = True
-                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, 'x', '',
-                                                           coverage))
-                    elif fail:
-                        print('\t\t --- THIS MUTANT IS NOT EQUIVALENT!')
-                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', 'x',
-                                                           coverage))
-                    else:
-                        f.write('{0},{1},{2},{3}\n'.format(mutant.id, '', '',
-                                                           coverage))
-                    f.close()
+
+                if tests_total > 0:
+                    with open(os.path.join(output,
+                                           'equivalents.csv'), 'a') as f:
+                        if coverage >= coverage_threshold and not fail:
+                            print('\t\t +++ THIS MUTANT MAY BE EQUIVALENT!')
+                            mutant.maybe_equivalent = True
+                            f.write('{0},{1},{2},{3}\n'.format(
+                                mutant.id, 'x', '', coverage))
+                        elif fail:
+                            print('\t\t --- THIS MUTANT IS NOT EQUIVALENT!')
+                            f.write('{0},{1},{2},{3}\n'.format(
+                                mutant.id, '', 'x', coverage))
+                        else:
+                            f.write('{0},{1},{2},{3}\n'.format(
+                                mutant.id, '', '', coverage))
+                        f.close()
+                else:
+                    mutant.is_invalid = True
             else:
                 print('\t\tWARNING: mutant not compile: {0}'.format(
                     mutant.path))

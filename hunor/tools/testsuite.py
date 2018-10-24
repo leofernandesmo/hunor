@@ -20,6 +20,7 @@ class TestSuiteResult:
         self.fail_tests_total = 0
         self.fail_tests = set()
         self.coverage_tests = set()
+        self.is_valid = True
 
     def to_dict(self):
         return {
@@ -29,7 +30,8 @@ class TestSuiteResult:
             'fail_tests': list(self.fail_tests),
             'coverage_tests': list(self.coverage_tests),
             'fail_coverage_tests': list(self.fail_coverage_tests),
-            'fail_coverage_tests_total': len(self.fail_coverage_tests)
+            'fail_coverage_tests_total': len(self.fail_coverage_tests),
+            'is_valid': self.is_valid
         }
 
     @property
