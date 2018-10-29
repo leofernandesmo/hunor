@@ -215,8 +215,10 @@ class Mutant:
 
     def gen_label(self):
         transformation = self.transformation.split(' => ')
-        ori_lhs, ori_rhs, ori_op = _split_expression(transformation[0])
-        mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1])
+        ori_lhs, ori_rhs, ori_op = _split_expression(transformation[0],
+                                                     self.operator)
+        mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1],
+                                                     self.operator)
 
         self.statement_operator = ori_op
         label = self.id
@@ -239,6 +241,28 @@ class Mutant:
         elif self.operator == 'ODL':
             label = '{0} {1}'.format(
                 'ODL', _check_hand_side(mut_lhs, ori_lhs, ori_rhs))
+        elif self.operator == 'AORS':
+            pass
+        elif self.operator == 'AODU':
+            pass
+        elif self.operator == 'AODS':
+            pass
+        elif self.operator == 'AOIU':
+            pass
+        elif self.operator == 'AOIS':
+            pass
+        elif self.operator == 'COR':
+            label = '{0} {1}'.format('COR', mut_op)
+        elif self.operator == 'LOR':
+            label = '{0} {1}'.format('LOR', mut_op)
+        elif self.operator == 'LOI':
+            pass
+        elif self.operator == 'ASRS':
+            pass
+        elif self.operator == 'SDL':
+            pass
+        else:
+            print('WARNING LABEL: Not expected. {0}'.format(self.operator))
 
         return label
 
@@ -254,10 +278,27 @@ def _check_hand_side(to_check, lhs, rhs):
     return side
 
 
-def _split_expression(expression):
+def _split_expression(expression, mut_operator=None):
 
+    unary_op = ['++', '--']
     two_char = ['==', '>=', '<=', '!=', '&&', '||']
     one_char = ['>', '<', '&', '|', '^', '+', '-', '*', '/', '%']
+    unary_mut_op = ['AORS', 'AODU', 'AODS', 'AOIU', 'AOIS']
+
+    if mut_operator == 'AORB':
+        two_char = []
+        one_char = ['+', '-', '*', '/', '%']
+    elif mut_operator == 'ROR':
+        two_char = ['==', '>=', '<=', '!=']
+        one_char = ['>', '<']
+    elif mut_operator == 'COR':
+        two_char = ['||', '&&']
+        one_char = []
+    elif mut_operator == 'LOR':
+        two_char = []
+        one_char = ['&', '|', '^']
+    elif mut_operator in unary_mut_op:
+        pass
 
     exp_operator = None
     rhs = None
@@ -270,7 +311,7 @@ def _split_expression(expression):
 
     if exp_operator is None:
         for operator in one_char:
-            if (operator in expression
+            if (operator in expression and expression.index
                     and not expression.startswith(operator)
                     and not expression.endswith(operator)):
                 exp_operator = operator

@@ -170,7 +170,6 @@ def get_targets(source_dir, file, count=0):
                                 'operator': node.operator
                             })
                             count += 1
-
     targets = clean_ambiguous(targets)
     return targets
 
@@ -182,7 +181,7 @@ def clean_ambiguous(targets):
 
         for a in targets:
             ambiguous = False
-            for b in targets:
+            for b in clean:
                 if (a['id'] != b['id']
                    and a['class'] == b['class']
                    and a['type_method'] == b['type_method']
