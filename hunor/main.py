@@ -11,8 +11,9 @@ from hunor.utils import write_json
 
 class Hunor:
 
-    def __init__(self, options):
+    def __init__(self, options, using_target=False):
         self.options = options
+        self.using_target = using_target
 
     def run(self):
         jdk = JDK(self.options.java_home)
@@ -52,34 +53,43 @@ class Hunor:
             sut_class=self.options.sut_class,
             coverage_threshold=self.options.coverage_threshold,
             output=self.options.output,
-            mutants_dir=self.options.mutants
+            mutants_dir=self.options.mutants,
+            using_target=self.using_target
         )
 
-        subsuming_mutants = subsuming(
-            mutants,
-            coverage_threshold=self.options.coverage_threshold
-        )
+        if mutants is not None:
+            subsuming_mutants = subsuming(
+                mutants,
+                coverage_threshold=self.options.coverage_threshold
+            )
 
-        minimized, minimal_tests = minimize(
-            mutants,
-            coverage_threshold=self.options.coverage_threshold
-        )
+            minimized, minimal_tests = minimize(
+                mutants,
+                coverage_threshold=self.options.coverage_threshold
+            )
 
-        create_dmsg(mutants=subsuming_mutants, export_dir=self.options.output)
-        mutants = subsuming(
-            mutants,
-            clean=False,
-            coverage_threshold=self.options.coverage_threshold
-        )
+            create_dmsg(mutants=subsuming_mutants,
+                        export_dir=self.options.output)
+            mutants = subsuming(
+                mutants,
+                clean=False,
+                coverage_threshold=self.options.coverage_threshold
+            )
 
-        mutants_dict = [mutants[m].to_dict() for m in mutants]
+            mutants_dict = [mutants[m].to_dict() for m in mutants]
 
-        write_json(minimized, 'subsuming_minimal_tests', self.options.mutants)
-        write_json(list(minimal_tests), 'minimal_tests', self.options.mutants)
-        write_json(mutants_dict, 'mutants', self.options.mutants)
-        write_json(subsuming_mutants, 'subsuming_mutants', self.options.mutants)
+            write_json(minimized, 'subsuming_minimal_tests',
+                       self.options.mutants)
+            write_json(list(minimal_tests), 'minimal_tests',
+                       self.options.mutants)
+            write_json(mutants_dict, 'mutants',
+                       self.options.mutants)
+            write_json(subsuming_mutants, 'subsuming_mutants',
+                       self.options.mutants)
 
-        return mutants_dict, subsuming_mutants
+            return mutants_dict, subsuming_mutants
+
+        return {}, {}
 
 
 def main():

@@ -77,11 +77,12 @@ def main():
                 o.output = o.mutants
                 o.sut_class = target['class']
                 o.no_compile = True
-                mutants, _ = Hunor(o).run()
+                mutants, _ = Hunor(o, using_target=True).run()
                 target['mutants'] = mutants
 
             for target in t:
-                db.save_target_and_mutants(target, target['mutants'])
+                if len(target['mutants']) > 0:
+                    db.save_target_and_mutants(target, target['mutants'])
 
             save_status['files'].append(file)
             save_status['targets'] += len(t)

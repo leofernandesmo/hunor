@@ -9,7 +9,7 @@ from hunor.tools.pit import Pit
 
 def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                          mutation_tool, sut_class, coverage_threshold,
-                         output, mutants_dir):
+                         output, mutants_dir, using_target=False):
 
     if mutation_tool == 'pit':
         mutation_tool = Pit(mutants, sut_class)
@@ -25,17 +25,39 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
         f.close()
 
     original_dir = os.path.join(mutants_dir, 'ORIGINAL')
+    ori_coverage = 0
+    ori_tests_total = 0
+    line_coverage = 0
+
+    if using_target and len(list(mutants.keys())) > 0:
+        line_coverage = mutants[list(mutants.keys())[0]].line_number
 
     if os.path.exists(original_dir):
-        ori_test_suites = junit.run_test_suites(test_suites, original_dir, 0)
+        ori_test_suites = junit.run_test_suites(test_suites, original_dir,
+                                                line_coverage)
         for t in ori_test_suites:
+            ori_coverage += ori_test_suites[t].coverage
+            ori_tests_total += ori_test_suites[t].tests_total
             if ori_test_suites[t].tests_total == 0:
                 test_suites[t].is_valid = False
 
-    print("RUNNING TEST SUITES FOR ALL MUTANTS...")
+    coverage_threshold = float(coverage_threshold)
+    if coverage_threshold < 1:
+        coverage_threshold = math.ceil(
+            coverage_threshold * ori_tests_total)
+    else:
+        coverage_threshold = math.ceil(coverage_threshold)
+
+    if using_target and ori_coverage < coverage_threshold:
+        print('WARNING: Not enough coverage for this target.'
+              + ' coverage: {0}, test cases: {1}'.format(ori_coverage,
+                                                        ori_tests_total))
+        return None
+
+    print('RUNNING TEST SUITES FOR ALL MUTANTS...')
     for i, m in enumerate(mutants):
         mutant = mutants[m]
-        print("\tmutant: {0}... {1}/{2}".format(mutant, i + 1, len(mutants)))
+        print('\tmutant: {0}... {1}/{2}'.format(mutant, i + 1, len(mutants)))
 
         if os.path.exists(mutant.path):
             compile_success = True
@@ -65,13 +87,6 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
 
                     coverage_log.append('{0}: {1}'.format(
                         r, mutant.result.test_suites[r].coverage))
-
-                coverage_threshold = float(coverage_threshold)
-                if coverage_threshold < 1:
-                    coverage_threshold = math.ceil(
-                        coverage_threshold * tests_total)
-                else:
-                    coverage_threshold = math.ceil(coverage_threshold)
 
                 print('\t\tcoverage: {0}/{4} ({1}) tests fail: {2}/{3}'.format(
                     coverage, ', '.join(coverage_log), fail_tests_total,

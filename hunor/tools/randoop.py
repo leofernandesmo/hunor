@@ -54,7 +54,8 @@ class Randoop:
             return subprocess.check_output(command, shell=False,
                                            env=env,
                                            cwd=self.project_dir,
-                                           timeout=5 * 60)
+                                           timeout=5 * 60,
+                                           stderr=subprocess.DEVNULL)
         except subprocess.TimeoutExpired:
             print('# ERROR: {0} generate timed out.'.format(TOOL))
         except subprocess.CalledProcessError as e:

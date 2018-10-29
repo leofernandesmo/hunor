@@ -219,6 +219,9 @@ def redundant_abstract(targets, output_dir=None):
             (Mutant.target.in_(targets))
         ).group_by(Mutant.mutation))
 
+    def _percent(d, key):
+        return '{0:.2f}'.format(d[key]/d['total'])
+
     for r in total:
         abstract[r] = {
             'redundant': red[r] if r in red.keys() else 0,
@@ -230,6 +233,20 @@ def redundant_abstract(targets, output_dir=None):
 
     if output_dir is not None:
         write_json(abstract, output_dir=output_dir, name='abstract')
+        with open(os.path.join(output_dir, 'abstract.csv'), 'w') as csv:
+            csv.write("{0},{1},{2},{3},{4},{5}\n".format(
+                '', 'redundant', '%', 'subsumed', '%', 'total'
+            ))
+            for r in abstract:
+                csv.write("{0},{1},{2},{3},{4},{5}\n".format(
+                    r,
+                    abstract[r]['redundant'],
+                    _percent(abstract[r], 'redundant'),
+                    abstract[r]['subsumed'],
+                    _percent(abstract[r], 'subsumed'),
+                    abstract[r]['total'],
+                ))
+            csv.close()
 
     return abstract
 
