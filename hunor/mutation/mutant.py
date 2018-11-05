@@ -215,11 +215,18 @@ class Mutant:
 
     def gen_label(self):
         transformation = self.transformation.split(' => ')
-        ori_lhs, ori_rhs, ori_op = _split_expression(transformation[0])
-        mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1])
+
+        ori_lhs, ori_rhs, ori_op = None, None, None
+        mut_lhs, mut_rhs, mut_op = None, None, None
+
+        if len(transformation) > 0:
+            ori_lhs, ori_rhs, ori_op = _split_expression(transformation[0])
+
+        if len(transformation) > 1:
+            mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1])
 
         self.statement_operator = ori_op
-        label = self.id
+        label = self.id\
 
         if self.operator == 'ROR':
             if mut_op is not None:
