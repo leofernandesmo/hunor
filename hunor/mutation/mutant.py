@@ -226,7 +226,7 @@ class Mutant:
             mut_lhs, mut_rhs, mut_op = _split_expression(transformation[1])
 
         self.statement_operator = ori_op
-        label = self.id\
+        label = self.id
 
         if self.operator == 'ROR':
             if mut_op is not None:

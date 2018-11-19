@@ -21,6 +21,8 @@ class TestSuiteResult:
         self.fail_tests = set()
         self.coverage_tests = set()
         self.is_valid = True
+        self.elapsed_time = None
+        self.maybe_in_loop = False
 
     def to_dict(self):
         return {
@@ -31,7 +33,9 @@ class TestSuiteResult:
             'coverage_tests': list(self.coverage_tests),
             'fail_coverage_tests': list(self.fail_coverage_tests),
             'fail_coverage_tests_total': len(self.fail_coverage_tests),
-            'is_valid': self.is_valid
+            'is_valid': self.is_valid,
+            'elapsed_time': self.elapsed_time,
+            'maybe_in_loop': self.maybe_in_loop
         }
 
     @property

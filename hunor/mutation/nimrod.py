@@ -36,6 +36,7 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
         ori_test_suites = junit.run_test_suites(test_suites, original_dir,
                                                 line_coverage)
         for t in ori_test_suites:
+            test_suites[t].elapsed_time = ori_test_suites[t].elapsed_time
             ori_coverage += ori_test_suites[t].coverage
             ori_tests_total += ori_test_suites[t].tests_total
             if ori_test_suites[t].tests_total == 0:
@@ -68,9 +69,9 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
             if compile_success:
                 mutant.result.test_suites = junit.run_test_suites(
                     test_suites, mutant.path, mutant.line_number, original_dir)
-
                 coverage = 0
                 fail = False
+                maybe_in_loop = False
                 coverage_log = []
                 tests_total = 0
                 fail_tests_total = 0
@@ -79,6 +80,8 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                 for r in mutant.result.test_suites:
                     coverage += mutant.result.test_suites[r].coverage
                     fail = fail or mutant.result.test_suites[r].fail
+                    maybe_in_loop = (maybe_in_loop
+                                     or mutant.result.test_suites[r].fail)
                     tests_total += mutant.result.test_suites[r].tests_total
                     fail_tests_total += (mutant.result.test_suites[r]
                                          .fail_tests_total)
@@ -92,7 +95,7 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                     coverage, ', '.join(coverage_log), fail_tests_total,
                     tests_total, coverage_threshold))
 
-                if tests_total > 0:
+                if tests_total > 0 or maybe_in_loop:
                     with open(os.path.join(output,
                                            'equivalents.csv'), 'a') as f:
                         if coverage >= coverage_threshold and not fail:

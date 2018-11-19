@@ -3,6 +3,7 @@ import re
 import copy
 import subprocess
 import shutil
+import time
 
 from bs4 import BeautifulSoup
 
@@ -26,7 +27,7 @@ class JUnit:
         self.source_dir = source_dir
 
     def _run_test(self, test_suite, test_classes_dir, test_class,
-                  mutant_classpath=''):
+                  mutant_classpath='', timeout=(60 * 3)):
 
         classpath = generate_classpath([
             JMOCKIT, JUNIT, HAMCREST, EVOSUITE,
@@ -52,33 +53,43 @@ class JUnit:
             'org.junit.runner.JUnitCore', test_class
         ]
 
+        start = time.time()
         try:
             output = subprocess.check_output(command, shell=False,
                                              cwd=test_suite,
                                              stderr=subprocess.DEVNULL,
-                                             timeout=(60 * 3))
-            return _extract_results_ok(output.decode('unicode_escape'))
+                                             timeout=timeout)
+            return (_extract_results_ok(output.decode('unicode_escape')),
+                    time.time() - start)
         except subprocess.CalledProcessError as e:
-            return _extract_results(e.output.decode('unicode_escape'))
+            return (_extract_results(e.output.decode('unicode_escape')),
+                    time.time() - start)
         except subprocess.TimeoutExpired:
-            print("# ERROR: Run JUnit tests timed out.")
-            return 0, 0, set()
+            elapsed_time = time.time() - start
+            print("# ERROR: Run JUnit tests timed out. {0} seconds".format(
+                elapsed_time
+            ))
+            return (0, 0, set()), elapsed_time
 
     def _run_test_suite(self, test_suite, mutant_classpath, mutation_line=0,
-                        original_path=None):
+                        original_path=None, timeout=(60 * 3)):
         total = 0
         fail = 0
         fail_tests = set()
         coverage = 0
         coverage_tests = set()
+        elapsed_time = 0
 
         for test_class in test_suite.classes:
-            t, f, f_s = self._run_test(test_suite.source_dir,
-                                       test_suite.classes_dir,
-                                       test_class, mutant_classpath)
+            (t, f, f_s), e_t = self._run_test(test_suite.source_dir,
+                                              test_suite.classes_dir,
+                                              test_class,
+                                              mutant_classpath=mutant_classpath,
+                                              timeout=timeout)
 
             total += t
             fail += f
+            elapsed_time += e_t
             fail_tests = fail_tests.union(f_s)
             coverage_src = test_suite.source_dir
 
@@ -99,17 +110,25 @@ class JUnit:
             if os.path.exists(coverage_report_dir):
                 shutil.copytree(coverage_report_dir, coverage_report_dst_dir)
 
-        return total, fail, fail_tests, coverage, coverage_tests
+        return total, fail, fail_tests, coverage, coverage_tests, elapsed_time
 
     def run_test_suites(self, test_suites, mutant_classpath, mutation_line,
                         original_path=None):
-        test_suites = copy.deepcopy(test_suites)
-        for t in test_suites:
-            if test_suites[t].is_valid:
-                test_suite = test_suites[t]
-                (total, fail, fail_tests,
-                 coverage, coverage_tests) = self._run_test_suite(
-                    test_suite, mutant_classpath, mutation_line, original_path)
+        suites = copy.deepcopy(test_suites)
+        for t in suites:
+            if suites[t].is_valid:
+                test_suite = suites[t]
+
+                if test_suites[t].elapsed_time:
+                    (total, fail, fail_tests, coverage, coverage_tests,
+                     elapsed_time) = self._run_test_suite(
+                        test_suite, mutant_classpath, mutation_line,
+                        original_path, timeout=test_suites[t].elapsed_time * 3)
+                else:
+                    (total, fail, fail_tests, coverage, coverage_tests,
+                     elapsed_time) = self._run_test_suite(
+                        test_suite, mutant_classpath, mutation_line,
+                        original_path)
 
                 test_suite.fail = (fail != 0)
                 test_suite.coverage = coverage
@@ -118,8 +137,14 @@ class JUnit:
                 test_suite.fail_tests = self._prefix(test_suite, fail_tests)
                 test_suite.coverage_tests = self._prefix(test_suite,
                                                          coverage_tests)
+                test_suite.elapsed_time = elapsed_time
+                if test_suite.tests_total == 0:
+                    test_suite.is_valid = False
+                    if test_suite.elapsed_time > test_suites[t].elapsed_time:
+                        test_suite.fail = True
+                        test_suite.maybe_in_loop = True
 
-        return test_suites
+        return suites
 
     @staticmethod
     def _prefix(test_suite, ids):
