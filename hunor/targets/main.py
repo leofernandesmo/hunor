@@ -54,7 +54,12 @@ def get_targets(source_dir, file, count=0):
                 f.close()
 
         for _, clazz in ast.filter(tree.ClassDeclaration):
-            class_name = '.'.join([ast.package.name, clazz.name])
+            package_name = ast.package.name if ast.package else None
+
+            if package_name:
+                class_name = '.'.join([package_name, clazz.name])
+            else:
+                class_name = clazz.name
 
             for _, method in clazz.filter(tree.MethodDeclaration):
 

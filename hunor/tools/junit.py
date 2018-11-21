@@ -140,7 +140,8 @@ class JUnit:
                 test_suite.elapsed_time = elapsed_time
                 if test_suite.tests_total == 0:
                     test_suite.is_valid = False
-                    if test_suite.elapsed_time > test_suites[t].elapsed_time:
+                    if (test_suites[t].elapsed_time is not None
+                            and test_suite.elapsed_time > test_suites[t].elapsed_time):
                         test_suite.fail = True
                         test_suite.maybe_in_loop = True
 
