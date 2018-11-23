@@ -42,7 +42,7 @@ setup(
     entry_points={
         'console_scripts': [
             'hunor=hunor.main:main',
-            'hunor-gen:hunor.mutation.generate:main'
+            'hunor-gen=hunor.mutation.generate:main'
         ]
     },
     classifiers=[
