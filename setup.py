@@ -13,7 +13,7 @@ setup(
     description='The son of Nimrod',
     long_description=readme(),
     keywords='test mutant analysis equivalent',
-    version='0.4.0',
+    version='0.4.3',
     url='https://github.com/marcioaug/hunor',
     author='Marcio Augusto Guimarães',
     author_email='masg@ic.ufal.br',
@@ -23,8 +23,7 @@ setup(
         'hunor.tools',
         'hunor.mutation',
         'hunor.db',
-        'hunor.targets',
-        'hunor.models'
+        'hunor.targets'
     ],
     install_requires=[
         'argparse==1.4.0',
@@ -50,5 +49,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Topic :: Test :: Mutation'
-    ]
+    ],
+    python_requires='>=3'
 )
