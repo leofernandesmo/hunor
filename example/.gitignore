@@ -8,3 +8,6 @@ minimal/.idea
 minimal/*.iml
 mutants/
 commons-math/
+commons-lang/
+xstream/
+commons-math-old/

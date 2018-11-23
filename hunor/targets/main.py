@@ -66,8 +66,16 @@ def get_targets(source_dir, file, count=0):
                 has_allowed_parameters = True
 
                 for parameter in method.parameters:
-                    if parameter.type.name not in ALLOWED_PARAM_TYPES:
-                        has_allowed_parameters = False
+                    if isinstance(parameter.type, tree.BasicType):
+                        if parameter.type.name not in ALLOWED_PARAM_TYPES:
+                            has_allowed_parameters = False
+                    elif isinstance(parameter.type, tree.ReferenceType):
+                        t = parameter.type.sub_type
+                        while t:
+                            if (t.sub_type is None
+                                    and t.name not in ALLOWED_PARAM_TYPES):
+                                has_allowed_parameters = False
+                            t = t.sub_type
 
                 if has_allowed_parameters:
                     method_name = method.name
@@ -93,7 +101,8 @@ def get_targets(source_dir, file, count=0):
                                                      node.operandl.member])
                             else:
                                 operandl = node.operandl.member
-                        elif isinstance(node.operandl, tree.Literal):
+                        elif (isinstance(node.operandl, tree.Literal)
+                              and not str(node.operandl.value).startswith('"')):
                             operandl = node.operandl.value
                         elif (isinstance(node.operandl, tree.This)
                               and len(node.operandl.selectors) == 1
@@ -111,7 +120,8 @@ def get_targets(source_dir, file, count=0):
                                                      node.operandr.member])
                             else:
                                 operandr = node.operandr.member
-                        elif isinstance(node.operandr, tree.Literal):
+                        elif (isinstance(node.operandr, tree.Literal)
+                              and not str(node.operandr.value).startswith('"')):
                             operandr = node.operandr.value
                         elif (isinstance(node.operandr, tree.This)
                               and len(node.operandr.selectors) == 1

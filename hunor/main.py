@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import os
+
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
 from hunor.tools.junit import JUnit
@@ -24,6 +26,13 @@ class Hunor:
             no_compile=self.options.no_compile
         ).compile_project(self.options.source)
 
+        junit = JUnit(
+            jdk=jdk,
+            sut_class=self.options.sut_class,
+            classpath=classpath,
+            source_dir=self.options.source
+        )
+
         test_suites = generate_test_suites(
             jdk=jdk,
             classpath=classpath,
@@ -33,14 +42,9 @@ class Hunor:
             is_randoop_disabled=self.options.is_randoop_disabled,
             is_evosuite_disabled=self.options.is_evosuite_disabled,
             project_dir=self.options.source,
-            suites_number=self.options.suites_number
-        )
-
-        junit = JUnit(
-            jdk=jdk,
-            sut_class=self.options.sut_class,
-            classpath=classpath,
-            source_dir=self.options.source
+            suites_evosuite=self.options.suites_evosuite,
+            suites_randoop=self.options.suites_randoop,
+            junit=junit
         )
 
         mutants = equivalence_analysis(

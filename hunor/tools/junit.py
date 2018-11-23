@@ -112,7 +112,7 @@ class JUnit:
 
         return total, fail, fail_tests, coverage, coverage_tests, elapsed_time
 
-    def run_test_suites(self, test_suites, mutant_classpath, mutation_line,
+    def run_test_suites(self, test_suites, mutant_classpath, mutation_line=0,
                         original_path=None):
         suites = copy.deepcopy(test_suites)
         for t in suites:

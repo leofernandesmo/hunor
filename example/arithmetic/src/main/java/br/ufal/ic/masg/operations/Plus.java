@@ -9,4 +9,9 @@ public class Plus implements Operation {
         return var1 + var2;
     }
 
+    public String concat(String var1, String var2) {
+        var1 = "AAAA" + "bbbb";
+        return var1 + var2;
+    }
+
 }
