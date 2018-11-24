@@ -50,7 +50,7 @@ class TestSuiteResult:
 
 def generate_test_suites(jdk, classpath, config_file, sut_class, output,
                          is_randoop_disabled, is_evosuite_disabled,
-                         project_dir, suites_number):
+                         project_dir, suites_evosuite, suites_randoop, junit):
 
     reuse_tests = os.path.join(output, '..')
     saved_suites = {}
@@ -65,18 +65,28 @@ def generate_test_suites(jdk, classpath, config_file, sut_class, output,
     tests_dir = os.path.join(output, 'tests')
     test_suites = {}
 
+    if sut_class in saved_suites.keys():
+        valid_suites = []
+        for s in saved_suites[sut_class]:
+            if os.path.exists(s['source_dir']):
+                valid_suites.append(s)
+        if len(valid_suites) > 0:
+            saved_suites[sut_class] = valid_suites
+        else:
+            del saved_suites[sut_class]
+
     if sut_class not in saved_suites.keys():
         saved_suites[sut_class] = []
 
         if not is_randoop_disabled:
-            for i in range(suites_number):
+            for i in range(suites_randoop):
                 test_suite_name = '{0}_{1}'.format('randoop', i + 1)
                 randoop = Randoop(jdk, classpath, config_file, tests_dir,
                                   sut_class, project_dir,
                                   test_suite_name=test_suite_name)
                 source_dir, classes_dir, classes = randoop.generate()
 
-                test_suites[test_suite_name] = TestSuiteResult(
+                test_suite = TestSuiteResult(
                     tid=test_suite_name,
                     source_dir=source_dir,
                     classes_dir=classes_dir,
@@ -84,22 +94,37 @@ def generate_test_suites(jdk, classpath, config_file, sut_class, output,
                     prefix='{0}_{1}'.format('RAN', i + 1)
                 )
 
-                saved_suites[sut_class].append({
-                    'tid': test_suite_name,
-                    'source_dir': source_dir,
-                    'classes_dir': classes_dir,
-                    'classes': classes,
-                    'prefix': '{0}_{1}'.format('RAN', i + 1)
-                })
+                checked_test_suites = junit.run_test_suites(
+                    {test_suite_name: test_suite}, classpath)
+
+                if (not checked_test_suites[test_suite_name].maybe_in_loop
+                        and not checked_test_suites[test_suite_name].fail
+                        and checked_test_suites[test_suite_name].is_valid):
+                    test_suites[test_suite_name] = test_suite
+
+                    saved_suites[sut_class].append({
+                        'tid': test_suite_name,
+                        'source_dir': source_dir,
+                        'classes_dir': classes_dir,
+                        'classes': classes,
+                        'prefix': '{0}_{1}'.format('RAN', i + 1)
+                    })
+                else:
+                    print('# ERROR: invalid suite. FAIL: {0}, LOOP: {1}, '
+                          'FAILED TESTES: {2}'.format(
+                            checked_test_suites[test_suite_name].fail,
+                            checked_test_suites[test_suite_name].maybe_in_loop,
+                            checked_test_suites[test_suite_name].fail_tests
+                          ))
 
         if not is_evosuite_disabled:
-            for i in range(suites_number):
+            for i in range(suites_evosuite):
                 test_suite_name = '{0}_{1}'.format('evosuite', i + 1)
                 evosuite = Evosuite(jdk, classpath, config_file, tests_dir,
                                     sut_class, test_suite_name=test_suite_name)
                 source_dir, classes_dir, classes = evosuite.generate()
 
-                test_suites[test_suite_name] = TestSuiteResult(
+                test_suite = TestSuiteResult(
                     tid=test_suite_name,
                     source_dir=source_dir,
                     classes_dir=classes_dir,
@@ -107,13 +132,28 @@ def generate_test_suites(jdk, classpath, config_file, sut_class, output,
                     prefix='{0}_{1}'.format('EVO', i + 1)
                 )
 
-                saved_suites[sut_class].append({
-                    'tid': test_suite_name,
-                    'source_dir': source_dir,
-                    'classes_dir': classes_dir,
-                    'classes': classes,
-                    'prefix': '{0}_{1}'.format('EVO', i + 1)
-                })
+                checked_test_suites = junit.run_test_suites(
+                    {test_suite_name: test_suite}, classpath)
+
+                if (not checked_test_suites[test_suite_name].maybe_in_loop
+                        and not checked_test_suites[test_suite_name].fail
+                        and checked_test_suites[test_suite_name].is_valid):
+                    test_suites[test_suite_name] = test_suite
+
+                    saved_suites[sut_class].append({
+                        'tid': test_suite_name,
+                        'source_dir': source_dir,
+                        'classes_dir': classes_dir,
+                        'classes': classes,
+                        'prefix': '{0}_{1}'.format('EVO', i + 1)
+                    })
+                else:
+                    print('# ERROR: invalid suite. FAIL: {0}, LOOP: {1}, '
+                          'FAILED TESTES: {2}'.format(
+                            checked_test_suites[test_suite_name].fail,
+                            checked_test_suites[test_suite_name].maybe_in_loop,
+                            checked_test_suites[test_suite_name].fail_tests
+                          ))
     else:
         for t in saved_suites[sut_class]:
             test_suites[t['tid']] = TestSuiteResult(

@@ -17,12 +17,14 @@ DEFAULT = {
 
 class Options:
 
-    def __init__(self, maven_home, java_home, config_file, mutants, sut_class,
-                 mutation_tool, source=None, output=DEFAULT['output'],
-                 is_evosuite_disabled=False, is_randoop_disabled=False,
+    def __init__(self, maven_home, java_home, config_file, mutants,
+                 mutation_tool, sut_class=None, source=None,
+                 output=DEFAULT['output'], is_evosuite_disabled=False,
+                 is_randoop_disabled=False,
                  maven_timeout=DEFAULT['maven_timeout'],
                  coverage_threshold=DEFAULT['coverage_threshold'],
-                 no_compile=False, suites_number=DEFAULT['suites_number']):
+                 no_compile=False, suites_evosuite=DEFAULT['suites_number'],
+                 suites_randoop=DEFAULT['suites_number']):
 
         if maven_home:
             self.maven_home = os.path.abspath(maven_home)
@@ -45,7 +47,9 @@ class Options:
         self.sut_class = sut_class
         self.mutation_tool = mutation_tool
         self.no_compile = no_compile
-        self.suites_number = suites_number
+        self.suites_evosuite = suites_evosuite
+        self.suites_randoop = suites_randoop
+        self.java_src = _set_java_src(self.config_file)
 
     def __str__(self):
         return json.dumps({
@@ -62,7 +66,8 @@ class Options:
                 'sut_class': self.sut_class,
                 'mutation_tool': self.mutation_tool,
                 'no_compile': self.no_compile,
-                'suites_number': self.suites_number
+                'suites_evosuite': self.suites_evosuite,
+                'suites_randoop':self.suites_randoop,
         }, indent=2)
 
 
@@ -76,15 +81,23 @@ def _set_source_dir(source, config_file):
     )
 
 
+def _set_java_src(config_file):
+    return os.path.join(
+        os.path.dirname(config_file),
+        os.sep.join(config(config_file)['source']),
+        os.sep.join(config(config_file)['java_src'])
+    )
+
+
 def _set_output_dir(output):
     if os.path.exists(output):
         shutil.rmtree(output)
-    os.mkdir(output)
+    os.makedirs(output, exist_ok=True)
 
     return os.path.abspath(output)
 
 
-def to_options(parser):
+def _to_options(parser):
     o = parser.parse_args()
 
     return Options(
@@ -95,17 +108,45 @@ def to_options(parser):
         config_file=o.config_file,
         source=o.source,
         mutants=o.mutants,
-        sut_class=o.sut_class,
         mutation_tool=o.mutation_tool,
         output=o.output,
         maven_timeout=o.maven_timeout,
         coverage_threshold=float(o.coverage_threshold),
         no_compile=o.no_compile,
-        suites_number=int(o.suites_number)
+        suites_evosuite=int(o.suites_evosuite),
+        suites_randoop=int(o.suites_randoop)
     )
 
 
+def to_options(parser):
+    args = parser.parse_args()
+    options = _to_options(parser)
+
+    options.sut_class = args.sut_class
+
+    return options
+
+
+def to_options_gen(parser):
+    return _to_options(parser)
+
+
 def arg_parser():
+    parser = _default_arg_parser()
+
+    parser.add_argument('--class',
+                        action='store',
+                        dest='sut_class',
+                        required=True)
+
+    return parser
+
+
+def arg_parser_gen():
+    return _default_arg_parser()
+
+
+def _default_arg_parser():
     parser = ArgumentParser()
 
     parser.add_argument('-m', '--maven-home',
@@ -153,11 +194,6 @@ def arg_parser():
                         dest='coverage_threshold',
                         default=DEFAULT['coverage_threshold'])
 
-    parser.add_argument('--class',
-                        action='store',
-                        dest='sut_class',
-                        required=True)
-
     parser.add_argument('--mutation-tool',
                         action='store',
                         dest='mutation_tool',
@@ -168,9 +204,14 @@ def arg_parser():
                         action='store_true',
                         dest='no_compile')
 
-    parser.add_argument('--suites-number',
+    parser.add_argument('--suites-evosuite',
                         action='store',
-                        dest='suites_number',
+                        dest='suites_evosuite',
+                        default=DEFAULT['suites_number'])
+
+    parser.add_argument('--suites-randoop',
+                        action='store',
+                        dest='suites_randoop',
                         default=DEFAULT['suites_number'])
 
     return parser

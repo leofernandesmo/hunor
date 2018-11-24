@@ -3,6 +3,7 @@
   "source": [
     "."
   ],
+  "java_src": ["src", "main", "java"],
   "randoop": {
     "parameters": [
       "--output-limit=10000",
