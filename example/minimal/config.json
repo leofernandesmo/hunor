@@ -22,5 +22,6 @@
   },
   "source": [
     "."
-  ]
+  ],
+  "java_src": ["src", "main", "java"]
 }

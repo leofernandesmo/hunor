@@ -11,3 +11,5 @@ commons-math/
 commons-lang/
 xstream/
 commons-math-old/
+minimal/
+minimal/all_mutants/
