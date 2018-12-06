@@ -35,7 +35,7 @@ class MuJava:
             with open(log_file) as log:
                 for line in log.readlines():
                     data = line.split(':')
-                    if len(data) == 4:
+                    if len(data) >= 4:
                         operator = re.findall(r'[A-Z]*', data[0])[0]
                         mutants_data[data[0]] = Mutant(
                             mid=data[0],
@@ -45,7 +45,7 @@ class MuJava:
                             method=data[2],
                             line_number=int(data[1]) if (
                                 not operator == 'SDL') else int(data[1]) - 1,
-                            transformation=data[3],
+                            transformation=':'.join(data[3:]),
                             path=self._mutant_dir(data[0])
                         )
                 log.close()

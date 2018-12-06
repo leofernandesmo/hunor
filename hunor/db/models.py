@@ -202,6 +202,50 @@ class Mutant(BaseModel):
             & (Mutant.belongs_to_minimal == False)
         ).group_by(Mutant.mutation))
 
+    @staticmethod
+    def kdm_in_targets_group_by_mutation(targets):
+        return _group_by_dict(Mutant.select(
+            Mutant.mutation,
+            fn.COUNT(Mutant.id)
+        ).where(
+            (Mutant.target.in_(targets))
+            & (Mutant.belongs_to_minimal == True)
+            & (Mutant.has_brother == False)
+        ).group_by(Mutant.mutation))
+
+    @staticmethod
+    def kim_in_targets_group_by_mutation(targets):
+        return _group_by_dict(Mutant.select(
+            Mutant.mutation,
+            fn.COUNT(Mutant.id)
+        ).where(
+            (Mutant.target.in_(targets))
+            & (Mutant.belongs_to_minimal == True)
+            & (Mutant.has_brother == True)
+        ).group_by(Mutant.mutation))
+
+    @staticmethod
+    def kds_in_targets_group_by_mutation(targets):
+        return _group_by_dict(Mutant.select(
+            Mutant.mutation,
+            fn.COUNT(Mutant.id)
+        ).where(
+            (Mutant.target.in_(targets))
+            & (Mutant.belongs_to_minimal == False)
+            & (Mutant.has_brother == False)
+        ).group_by(Mutant.mutation))
+
+    @staticmethod
+    def kis_in_targets_group_by_mutation(targets):
+        return _group_by_dict(Mutant.select(
+            Mutant.mutation,
+            fn.COUNT(Mutant.id)
+        ).where(
+            (Mutant.target.in_(targets))
+            & (Mutant.belongs_to_minimal == False)
+            & (Mutant.has_brother == True)
+        ).group_by(Mutant.mutation))
+
 
 def redundant_abstract(targets, output_dir=None):
     red = Mutant.is_redundant_in_targets_group_by_mutation(targets)
@@ -249,6 +293,126 @@ def redundant_abstract(targets, output_dir=None):
             csv.close()
 
     return abstract
+
+
+def state_abstract(targets, output_dir=None, filename='states',
+                   file_format='csv'):
+    kdm = Mutant.kdm_in_targets_group_by_mutation(targets)
+    kim = Mutant.kim_in_targets_group_by_mutation(targets)
+    kds = Mutant.kds_in_targets_group_by_mutation(targets)
+    kis = Mutant.kis_in_targets_group_by_mutation(targets)
+
+    abstract = {}
+    total = _group_by_dict(
+        Mutant.select(
+            Mutant.mutation,
+            fn.COUNT(Mutant.id)
+        ).where(
+            (Mutant.target.in_(targets))
+        ).group_by(Mutant.mutation))
+
+    for r in total:
+        abstract[r] = {
+            'kdm': kdm[r] if r in kdm.keys() else 0,
+            'kim': kim[r] if r in kim.keys() else 0,
+            'kds': kds[r] if r in kds.keys() else 0,
+            'kis': kis[r] if r in kis.keys() else 0,
+            'total': total[r]
+        }
+
+    if output_dir is not None:
+        if file_format == 'csv':
+            write_state_csv(abstract, output_dir, filename)
+        elif file_format == 'tex':
+            write_state_tex(abstract, output_dir, filename)
+
+    return abstract
+
+
+def sum_state_abstract(abstracts):
+    abstract = {}
+    for a in abstracts:
+        for k in a:
+            if k not in abstract.keys():
+                abstract[k] = {
+                    'kdm': 0,
+                    'kim': 0,
+                    'kds': 0,
+                    'kis': 0,
+                    'total': 0
+                }
+
+            abstract[k]['kdm'] += a[k]['kdm']
+            abstract[k]['kim'] += a[k]['kim']
+            abstract[k]['kds'] += a[k]['kds']
+            abstract[k]['kis'] += a[k]['kis']
+            abstract[k]['total'] += a[k]['total']
+
+    return abstract
+
+
+def _percent(d, key, decimal=True):
+    p = d[key] / d['total']
+    return '{0:.1f}'.format(p if decimal else p * 100).replace('.', ',')
+
+
+def write_state_csv(abstract, output_dir, filename):
+    write_json(abstract, output_dir=output_dir, name=filename)
+    with open(os.path.join(output_dir, filename + '.csv'), 'w') as csv:
+        csv.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}\n".format(
+            '', 'kdm', '%', 'kim', '%', 'kds', '%', 'kis', '%', 'total'
+        ))
+        for r in sort_state(abstract):
+            r = r[0]
+            csv.write("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}\n".format(
+                r,
+                abstract[r]['kdm'],
+                _percent(abstract[r], 'kdm'),
+                abstract[r]['kim'],
+                _percent(abstract[r], 'kim'),
+                abstract[r]['kds'],
+                _percent(abstract[r], 'kds'),
+                abstract[r]['kis'],
+                _percent(abstract[r], 'kis'),
+                abstract[r]['total'],
+            ))
+        csv.close()
+
+
+def write_state_tex(abstract, output_dir, filename):
+    write_json(abstract, output_dir=output_dir, name=filename)
+    with open(os.path.join(output_dir, filename + '.tex'), 'w') as tex:
+        tex.write('\\begin{tabular}{@{}lccccc@{}}\n')
+        tex.write('\t\\toprule\n')
+        tex.write('\t\\textbf{Mutante} & \\textbf{KDM} & \\textbf{KIM} '
+                  '& \\textbf{KDS} & \\textbf{KIS} & \\textbf{Total}  \\\\\n')
+        tex.write('\t\\midrule\n')
+        for r in sort_state(abstract):
+            r = r[0]
+            tex.write('\t{0: <17}& {1: <13}& {2: <13}& {3: <13}'
+                      '& {4: <13}& {5: < 15}\\\\\n'
+                      ''.format(
+                                r.replace('%', '\%'),
+                                _percent(abstract[r], 'kdm', False) + '\\%',
+                                _percent(abstract[r], 'kim', False) + '\\%',
+                                _percent(abstract[r], 'kds', False) + '\\%',
+                                _percent(abstract[r], 'kis', False) + '\\%',
+                                abstract[r]['total']
+            ))
+        tex.write('\t\\bottomrule\n')
+        tex.write('\\end{tabular}\n')
+        tex.close()
+
+
+def sort_state(abstract):
+    return sorted(
+        abstract.items(),
+        key=lambda kv: (
+            (kv[1]['kdm'] + kv[1]['kim']) / kv[1]['total'],
+            1 - ((kv[1]['kds'] + kv[1]['kis']) / kv[1]['total'])
+        ) if kv[1]['total'] > 0 else (0, 0),
+        reverse=True
+    )
 
 
 class Brotherhood(BaseModel):
