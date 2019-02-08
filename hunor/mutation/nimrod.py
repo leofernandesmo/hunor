@@ -1,6 +1,8 @@
 import os
 import math
 
+from datetime import datetime
+
 from hunor.utils import get_class_files
 from hunor.tools.major import Major
 from hunor.tools.mujava import MuJava
@@ -56,7 +58,9 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
         return None
 
     print('RUNNING TEST SUITES FOR ALL MUTANTS...')
+    begin = datetime.now()
     for i, m in enumerate(mutants):
+        mutant_begin = datetime.now()
         mutant = mutants[m]
         print('\tmutant: {0}... {1}/{2}'.format(mutant, i + 1, len(mutants)))
 
@@ -121,5 +125,10 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
             print('\t\tWARNING: mutant directory not found: {0}'
                   .format(mutant.path))
             mutant.is_invalid = True
+
+        print('\t********************************* {0}'
+              .format(datetime.now() - mutant_begin))
+    print('############ END ANALYSIS ########### {0}'
+          .format(datetime.now() - begin))
 
     return mutants

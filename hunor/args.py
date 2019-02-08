@@ -20,7 +20,7 @@ class Options:
     def __init__(self, maven_home, java_home, config_file, mutants,
                  mutation_tool, sut_class=None, source=None,
                  output=DEFAULT['output'], is_evosuite_disabled=False,
-                 is_randoop_disabled=False,
+                 is_randoop_disabled=False, is_minimal_testsuite_disabled=True,
                  maven_timeout=DEFAULT['maven_timeout'],
                  coverage_threshold=DEFAULT['coverage_threshold'],
                  no_compile=False, suites_evosuite=DEFAULT['suites_number'],
@@ -50,6 +50,7 @@ class Options:
         self.suites_evosuite = suites_evosuite
         self.suites_randoop = suites_randoop
         self.java_src = _set_java_src(self.config_file)
+        self.is_minimal_testsuite_disabled = is_minimal_testsuite_disabled
 
     def __str__(self):
         return json.dumps({
@@ -67,7 +68,9 @@ class Options:
                 'mutation_tool': self.mutation_tool,
                 'no_compile': self.no_compile,
                 'suites_evosuite': self.suites_evosuite,
-                'suites_randoop':self.suites_randoop,
+                'suites_randoop': self.suites_randoop,
+                'is_minimal_testsuite_disabled':
+                    self.is_minimal_testsuite_disabled
         }, indent=2)
 
 
@@ -114,7 +117,8 @@ def _to_options(parser):
         coverage_threshold=float(o.coverage_threshold),
         no_compile=o.no_compile,
         suites_evosuite=int(o.suites_evosuite),
-        suites_randoop=int(o.suites_randoop)
+        suites_randoop=int(o.suites_randoop),
+        is_minimal_testsuite_disabled=o.is_minimal_testsuite_disabled
     )
 
 
@@ -213,5 +217,9 @@ def _default_arg_parser():
                         action='store',
                         dest='suites_randoop',
                         default=DEFAULT['suites_number'])
+
+    parser.add_argument('--disable-minimal-testsuite',
+                        action='store_true',
+                        dest='is_minimal_testsuite_disabled')
 
     return parser
