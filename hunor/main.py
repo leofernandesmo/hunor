@@ -4,6 +4,7 @@ import os
 from hunor.tools.java import JDK
 from hunor.tools.maven import Maven
 from hunor.tools.junit import JUnit
+from tools.impactanalysis import SafiraImpactAnalysis
 from hunor.args import arg_parser, to_options
 from hunor.tools.testsuite import generate_test_suites
 from hunor.mutation.nimrod import equivalence_analysis
@@ -18,6 +19,7 @@ class Hunor:
         self.using_target = using_target
 
     def run(self):
+
         jdk = JDK(self.options.java_home)
 
         classpath = Maven(
@@ -33,6 +35,18 @@ class Hunor:
             source_dir=self.options.source
         )
 
+        #Execute impact analysis
+        method_list, constructor_list, elapsed_time = SafiraImpactAnalysis(
+            jdk=jdk,
+            original=self.options.source,
+            mutant=self.options.mutants,
+            classpath=classpath
+        ).run_impactanalysis()
+
+
+        print('Impacted Methods:' + str(len(method_list)))
+        print('Impacted Constructors:' + str(len(constructor_list)))
+
         test_suites = generate_test_suites(
             jdk=jdk,
             classpath=classpath,
@@ -46,6 +60,7 @@ class Hunor:
             suites_randoop=self.options.suites_randoop,
             junit=junit
         )
+
 
         mutants = equivalence_analysis(
             jdk=jdk,
@@ -100,7 +115,17 @@ class Hunor:
 
 
 def main():
-    Hunor(to_options(arg_parser())).run()
+    hunor_options = to_options(arg_parser()) #.run()
+    original_path_mutant = hunor_options.mutants
+    original_output = hunor_options.output
+
+    for mutant in os.listdir(original_path_mutant):
+        new_path_mutant = os.path.join(original_path_mutant, mutant)
+        if(not os.path.isfile(new_path_mutant)):
+            print(new_path_mutant)
+            hunor_options.mutants = new_path_mutant
+            hunor_options.output = os.path.join(original_output, mutant)
+            Hunor(hunor_options).run()
 
 
 if __name__ == '__main__':
