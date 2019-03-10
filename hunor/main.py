@@ -125,7 +125,7 @@ def main():
             print(new_path_mutant)
             hunor_options.mutants = new_path_mutant
             hunor_options.output = os.path.join(original_output, mutant)
-            Hunor(hunor_options).run()
+            Hunor(hunor_options, using_target=True).run()
 
 
 if __name__ == '__main__':

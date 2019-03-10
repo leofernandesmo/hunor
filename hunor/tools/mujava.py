@@ -25,7 +25,7 @@ class MuJava:
         self.jdk = jdk
         self.classpath = classpath
 
-    def read_log(self, log_dir=None):
+    def read_log(self, log_dir=None, target_mutant=None):
         mutants_data = {}
 
         log_file = os.sep.join([self.mutants_dir if not log_dir else log_dir,
@@ -37,23 +37,25 @@ class MuJava:
                     data = line.split(':')
                     if len(data) >= 4:
                         operator = re.findall(r'[A-Z]*', data[0])[0]
-                        mutants_data[data[0]] = Mutant(
-                            mid=data[0],
-                            operator=operator,
-                            original_symbol=None,
-                            replacement_symbol=None,
-                            method=data[2],
-                            line_number=int(data[1]) if (
-                                not operator == 'SDL') else int(data[1]) - 1,
-                            transformation=':'.join(data[3:]),
-                            path=self._mutant_dir(data[0])
+                        if(not target_mutant or data[0] == target_mutant):
+                            mutants_data[data[0]] = Mutant(
+                                mid=data[0],
+                                operator=operator,
+                                original_symbol=None,
+                                replacement_symbol=None,
+                                method=data[2],
+                                line_number=int(data[1]) if (
+                                    not operator == 'SDL') else int(data[1]) - 1,
+                                transformation=':'.join(data[3:]),
+                                path=self._mutant_dir(data[0])
                         )
                 log.close()
 
         return mutants_data
 
     def _mutant_dir(self, mid):
-        return os.path.join(os.path.abspath(self.mutants_dir), str(mid))
+        #return os.path.join(os.path.abspath(self.mutants_dir), str(mid))
+        return os.path.abspath(self.mutants_dir)
 
     def _exec(self, com, parameters, cwd=None):
         cwd = self.mutants_dir if cwd is None else cwd

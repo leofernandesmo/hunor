@@ -13,20 +13,23 @@ def equivalence_analysis(jdk, junit, classpath, test_suites, mutants,
                          mutation_tool, sut_class, coverage_threshold,
                          output, mutants_dir, using_target=False):
 
+    
     if mutation_tool == 'pit':
-        mutation_tool = Pit(mutants, sut_class)
+        mutation_tool = Pit(mutants_dir, sut_class)
     elif mutation_tool == 'major':
-        mutation_tool = Major(mutants)
+        mutation_tool = Major(mutants_dir)
     elif mutation_tool == 'mujava':
-        mutation_tool = MuJava(mutants)
+        mutation_tool = MuJava(mutants_dir)
 
-    mutants = mutation_tool.read_log()
+    root_path = mutants_dir[0:mutants_dir.rfind('/')]
+    target_mutant = mutants_dir[mutants_dir.rfind('/')+1:]
+    mutants = mutation_tool.read_log(log_dir=root_path, target_mutant=target_mutant)
 
     with open(os.path.join(output, 'equivalents.csv'), 'w') as f:
         f.write('id,maybe_equivalent,not_equivalent,coverage\n')
         f.close()
 
-    original_dir = os.path.join(mutants_dir, 'ORIGINAL')
+    original_dir = os.path.join(mutants_dir[0:mutants_dir.rfind('/')], 'ORIGINAL')
     ori_coverage = 0
     ori_tests_total = 0
     line_coverage = 0
