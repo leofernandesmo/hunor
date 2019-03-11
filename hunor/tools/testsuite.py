@@ -51,10 +51,8 @@ class TestSuiteResult:
 
 def generate_test_suites(jdk, classpath, config_file, sut_class, output,
                          is_randoop_disabled, is_evosuite_disabled,
-                         project_dir, suites_evosuite, suites_randoop, junit):
-
-    # import pdb 
-    # pdb.set_trace()
+                         project_dir, suites_evosuite, suites_randoop, junit,
+                         impacted_methods=None, impacted_constructors=None):
 
     reuse_tests = os.path.join(output, '')
     saved_suites = {}
@@ -82,8 +80,8 @@ def generate_test_suites(jdk, classpath, config_file, sut_class, output,
     if sut_class not in saved_suites.keys():
         saved_suites[sut_class] = []
         #print('Threading EvoSuite')
-        thread_randoop = threading.Thread(target=generate_randoop_tests, args=(is_randoop_disabled, suites_randoop, jdk, classpath, config_file, tests_dir, sut_class, project_dir, junit, test_suites, saved_suites))
-        thread_evosuite = threading.Thread(target=generate_evosuite_tests, args=(is_evosuite_disabled, suites_evosuite, jdk, classpath, config_file, tests_dir, sut_class, junit, test_suites, saved_suites))
+        thread_randoop = threading.Thread(target=generate_randoop_tests, args=(is_randoop_disabled, suites_randoop, jdk, classpath, config_file, tests_dir, sut_class, project_dir, junit, test_suites, saved_suites, impacted_methods, impacted_constructors))
+        thread_evosuite = threading.Thread(target=generate_evosuite_tests, args=(is_evosuite_disabled, suites_evosuite, jdk, classpath, config_file, tests_dir, sut_class, junit, test_suites, saved_suites, impacted_methods, impacted_constructors))
 
         thread_randoop.start()
         thread_evosuite.start()
@@ -109,7 +107,7 @@ def generate_test_suites(jdk, classpath, config_file, sut_class, output,
 
     return test_suites
 
-def generate_evosuite_tests(is_evosuite_disabled, suites_evosuite, jdk, classpath, config_file, tests_dir, sut_class, junit, test_suites, saved_suites):
+def generate_evosuite_tests(is_evosuite_disabled, suites_evosuite, jdk, classpath, config_file, tests_dir, sut_class, junit, test_suites, saved_suites, impacted_methods, impacted_constructors):
     if not is_evosuite_disabled:
         for i in range(suites_evosuite):
             test_suite_name = '{0}_{1}'.format('evosuite', i + 1)
@@ -148,14 +146,16 @@ def generate_evosuite_tests(is_evosuite_disabled, suites_evosuite, jdk, classpat
                         checked_test_suites[test_suite_name].fail_tests
                       ))
 
-def generate_randoop_tests(is_randoop_disabled, suites_randoop, jdk, classpath, config_file, tests_dir, sut_class, project_dir, junit, test_suites, saved_suites):
+def generate_randoop_tests(is_randoop_disabled, suites_randoop, jdk, classpath, config_file, tests_dir, sut_class, project_dir, junit, test_suites, saved_suites, impacted_methods, impacted_constructors):
     
     if not is_randoop_disabled:
         for i in range(suites_randoop):
             test_suite_name = '{0}_{1}'.format('randoop', i + 1)
             randoop = Randoop(jdk, classpath, config_file, tests_dir,
                               sut_class, project_dir,
-                              test_suite_name=test_suite_name)
+                              test_suite_name=test_suite_name,
+                              impacted_methods=impacted_methods,
+                              impacted_constructors=impacted_constructors)
             source_dir, classes_dir, classes = randoop.generate()
 
             test_suite = TestSuiteResult(

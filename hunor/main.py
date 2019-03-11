@@ -58,7 +58,9 @@ class Hunor:
             project_dir=self.options.source,
             suites_evosuite=self.options.suites_evosuite,
             suites_randoop=self.options.suites_randoop,
-            junit=junit
+            junit=junit,
+            impacted_methods=method_list,
+            impacted_constructors=constructor_list
         )
 
 
